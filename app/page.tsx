@@ -129,6 +129,68 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Preferred Location Selection */}
+      <div className="mt-6">
+        <label className="block text-lg font-medium mb-2">Where is your preferred location for games?</label>
+        <div className="flex items-center gap-6">
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="location"
+              value="North"
+              checked={user.location === "North"}
+              onChange={(e) => setUser({ ...user, location: e.target.value })}
+              className="mr-2"
+            />
+            North
+          </label>
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="location"
+              value="South"
+              checked={user.location === "South"}
+              onChange={(e) => setUser({ ...user, location: e.target.value })}
+              className="mr-2"
+            />
+            South
+          </label>
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="location"
+              value="East"
+              checked={user.location === "East"}
+              onChange={(e) => setUser({ ...user, location: e.target.value })}
+              className="mr-2"
+            />
+            East
+          </label>
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="location"
+              value="West"
+              checked={user.location === "West"}
+              onChange={(e) => setUser({ ...user, location: e.target.value })}
+              className="mr-2"
+            />
+            West
+          </label>
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="location"
+              value="Central"
+              checked={user.location === "Central"}
+              onChange={(e) => setUser({ ...user, location: e.target.value })}
+              className="mr-2"
+            />
+            Central
+          </label>
+        </div>
+      </div>
+
       <p>Your current points: {user.points}</p>
 
       {/* Increase Points Button */}
