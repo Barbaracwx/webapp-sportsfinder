@@ -85,7 +85,6 @@ export default function Home() {
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Welcome, {user.firstName}!</h1>
       <h2 className="text-2xl font-bold mb-4">Profile Page</h2>
-      <p>Your current points: {user.points}</p>
 
       {/* Age Slider */}
       <div className="mt-6">
@@ -100,6 +99,37 @@ export default function Home() {
         />
         <p className="mt-2 text-center text-lg font-semibold">{user.age || 18} years old</p>
       </div>
+
+      {/* Gender Selection */}
+      <div className="mt-6">
+        <label className="block text-lg font-medium mb-2">What is your gender?</label>
+        <div className="flex items-center gap-6">
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="gender"
+              value="Male"
+              checked={user.gender === "Male"}
+              onChange={(e) => setUser({ ...user, gender: e.target.value })}
+              className="mr-2"
+            />
+            Male
+          </label>
+          <label className="flex items-center">
+            <input
+              type="radio"
+              name="gender"
+              value="Female"
+              checked={user.gender === "Female"}
+              onChange={(e) => setUser({ ...user, gender: e.target.value })}
+              className="mr-2"
+            />
+            Female
+          </label>
+        </div>
+      </div>
+
+      <p>Your current points: {user.points}</p>
 
       {/* Increase Points Button */}
       <button
