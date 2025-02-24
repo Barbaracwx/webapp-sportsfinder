@@ -15,6 +15,7 @@ export default function Home() {
   const [user, setUser] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [notification, setNotification] = useState('')
+  const [sports, setSports] = useState<{ [key: string]: string }>({})
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
@@ -73,6 +74,22 @@ export default function Home() {
     } catch (err) {
       setError('An error occurred while increasing points')
     }
+  }
+
+  const handleSportChange = (sport: string, selected: boolean) => {
+    if (selected) {
+      setSports((prev) => ({ ...prev, [sport]: 'Newbie' }))
+    } else {
+      setSports((prev) => {
+        const newSports = { ...prev }
+        delete newSports[sport]
+        return newSports
+      })
+    }
+  }
+
+  const handleSkillLevelChange = (sport: string, level: string) => {
+    setSports((prev) => ({ ...prev, [sport]: level }))
   }
 
   if (error) {
@@ -191,6 +208,36 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Sports Selection */}
+      <div className="mt-6">
+        <label className="block text-lg font-medium mb-2">What sports do you play?</label>
+        {['Tennis', 'Badminton', 'Table Tennis', 'Pickleball'].map((sport) => (
+          <div key={sport} className="flex items-center gap-4 mb-2">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={!!sports[sport]}
+                onChange={(e) => handleSportChange(sport, e.target.checked)}
+                className="mr-2"
+              />
+              {sport}
+            </label>
+            {sports[sport] && (
+              <select
+                value={sports[sport]}
+                onChange={(e) => handleSkillLevelChange(sport, e.target.value)}
+                className="p-1 border rounded"
+              >
+                <option value="Newbie">Newbie</option>
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate">Intermediate</option>
+                <option value="Pro">Pro</option>
+              </select>
+            )}
+          </div>
+        ))}
+      </div>
+
       <p>Your current points: {user.points}</p>
 
       {/* Increase Points Button */}
@@ -207,8 +254,5 @@ export default function Home() {
         </div>
       )}
     </div>
-
-
-    
   )
 }
