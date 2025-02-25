@@ -124,9 +124,38 @@ export default function MatchPreferencesPage() {
     });
   };
 
+  /* Validate form before submission */
+  const validateForm = () => {
+    for (const sport of Object.keys(user?.sports || {})) {
+      // Validate gender preference
+      if (!genderPreferences[sport]) {
+        setNotification(`Please select a gender preference for ${sport}.`);
+        return false;
+      }
+
+      // Validate skill levels
+      if ((skillLevels[sport] || []).length === 0) {
+        setNotification(`Please select at least one skill level for ${sport}.`);
+        return false;
+      }
+
+      // Validate location preferences
+      if ((locationPreferences[sport] || []).length === 0) {
+        setNotification(`Please select at least one preferred location for ${sport}.`);
+        return false;
+      }
+    }
+    return true;
+  };
+
   /* Handle form submission */
   const handleSubmit = async () => {
     if (!user) return;
+
+    // Validate form before submission
+    if (!validateForm()) {
+      return; // Stop submission if validation fails
+    }
 
     // Validate age ranges before submission
     for (const sport of Object.keys(ageRanges)) {
