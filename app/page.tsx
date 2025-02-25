@@ -17,8 +17,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [notification, setNotification] = useState('')
   const [sports, setSports] = useState<{ [key: string]: string }>({})
-  const [gender, setGender] = useState<string>('')
-  const [selectedLocations, setSelectedLocations] = useState<string[]>([]) 
+  const [gender, setGender] = useState<string>('') 
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([])
   
 
   /* to add in user if not in the database yet */
@@ -44,6 +44,8 @@ export default function Home() {
               setError(data.error)
             } else {
               setUser(data)
+              setGender(data.gender)
+              setSelectedLocations(data.location || [])
             }
           })
           .catch((err) => {
