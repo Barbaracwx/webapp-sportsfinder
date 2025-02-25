@@ -72,14 +72,6 @@ export default function MatchPreferencesPage() {
 
   /* Handle age range change for a sport */
   const handleAgeRangeChange = (sport: string, min: number, max: number) => {
-    // Ensure min is always less than or equal to max
-    if (min > max) {
-      min = max; // Adjust min to be equal to max if it exceeds max
-    }
-    if (max < min) {
-      max = min; // Adjust max to be equal to min if it falls below min
-    }
-
     setAgeRanges((prev) => ({
       ...prev,
       [sport]: [min, max],
@@ -89,6 +81,15 @@ export default function MatchPreferencesPage() {
   /* Handle form submission */
   const handleSubmit = async () => {
     if (!user) return;
+
+    // Validate age ranges before submission
+    for (const sport of Object.keys(ageRanges)) {
+      const [min, max] = ageRanges[sport];
+      if (min > max) {
+        setError(`Invalid age range for ${sport}: Minimum age cannot be greater than maximum age.`);
+        return; // Stop submission if any range is invalid
+      }
+    }
 
     try {
       const res = await fetch('/api/save-match-preferences', {
@@ -106,6 +107,7 @@ export default function MatchPreferencesPage() {
       if (data.success) {
         setNotification('Match preferences saved successfully!');
         setTimeout(() => setNotification(''), 3000);
+        setError(null); // Clear any previous errors
       } else {
         setError('Failed to save match preferences');
       }
