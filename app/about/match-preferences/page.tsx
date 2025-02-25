@@ -26,6 +26,7 @@ export default function MatchPreferencesPage() {
   const [error, setError] = useState<string | null>(null);
   const [notification, setNotification] = useState<string | null>(null); // For success/error notifications
   const [ageRanges, setAgeRanges] = useState<{ [key: string]: [number, number] }>({}); // Store age ranges for each sport
+  const [genderPreferences, setGenderPreferences] = useState<{ [key: string]: string }>({}); // Store gender preferences for each sport
 
   /* Fetch user data */
   useEffect(() => {
@@ -51,12 +52,15 @@ export default function MatchPreferencesPage() {
             } else {
               setUser(data);
 
-              // Initialize age ranges for each sport
+              // Initialize age ranges and gender preferences for each sport
               const initialAgeRanges: { [key: string]: [number, number] } = {};
+              const initialGenderPreferences: { [key: string]: string } = {};
               Object.keys(data.sports || {}).forEach((sport) => {
                 initialAgeRanges[sport] = [1, 60]; // Default age range for each sport (min: 1, max: 60)
+                initialGenderPreferences[sport] = 'Anything'; // Default gender preference for each sport
               });
               setAgeRanges(initialAgeRanges);
+              setGenderPreferences(initialGenderPreferences);
             }
           })
           .catch((err) => {
@@ -75,6 +79,14 @@ export default function MatchPreferencesPage() {
     setAgeRanges((prev) => ({
       ...prev,
       [sport]: [min, max],
+    }));
+  };
+
+  /* Handle gender preference change for a sport */
+  const handleGenderPreferenceChange = (sport: string, preference: string) => {
+    setGenderPreferences((prev) => ({
+      ...prev,
+      [sport]: preference,
     }));
   };
 
@@ -100,6 +112,7 @@ export default function MatchPreferencesPage() {
         body: JSON.stringify({
           telegramId: user.telegramId,
           ageRanges, // Send age ranges for each sport
+          genderPreferences, // Send gender preferences for each sport
         }),
       });
       const data = await res.json();
@@ -129,9 +142,9 @@ export default function MatchPreferencesPage() {
       {Object.keys(user.sports || {}).map((sport) => (
         <div key={sport} className="mb-6">
           <h2 className="text-xl font-semibold mb-2">{sport}</h2>
-          <p className="mb-2">What is your preferred age range for matching?</p>
 
-          {/* Double range slider for age range */}
+          {/* Age range question */}
+          <p className="mb-2">What is your preferred age range for matching?</p>
           <div className="flex items-center gap-4">
             <input
               type="range"
@@ -158,11 +171,27 @@ export default function MatchPreferencesPage() {
               className="w-full"
             />
           </div>
-
-          {/* Display selected age range */}
           <p className="mt-2 text-center">
             Age range: {ageRanges[sport]?.[0]} - {ageRanges[sport]?.[1]}
           </p>
+
+          {/* Gender preference question */}
+          <p className="mt-4 mb-2">Would you prefer to match with people of the same gender?</p>
+          <div className="flex items-center gap-4">
+            {['Male', 'Female', 'Anything'].map((option) => (
+              <label key={option} className="flex items-center">
+                <input
+                  type="radio"
+                  name={`genderPreference-${sport}`}
+                  value={option}
+                  checked={genderPreferences[sport] === option}
+                  onChange={() => handleGenderPreferenceChange(sport, option)}
+                  className="mr-2"
+                />
+                {option}
+              </label>
+            ))}
+          </div>
         </div>
       ))}
 
