@@ -17,6 +17,7 @@ model User {
   age        Int?
   gender     String?
   location   String[] // Array of strings for location
+  sports     Json?
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }

@@ -53,6 +53,7 @@ export default function Home() {
               setUser(data)
               setGender(data.gender)
               setSelectedLocations(data.location || [])
+              setSports(data.sports || {})
               // Ensure age is set from the database
               setUser((prevUser) => (prevUser ? { ...prevUser, age: data.age || 18 } : null))
             }
@@ -109,6 +110,7 @@ export default function Home() {
           gender: user.gender,
           location: selectedLocations,
           age: currentAge, // Use the captured age
+          sports: sports, // Send the sports data
         }),
       })
       const data = await res.json()
