@@ -15,6 +15,7 @@ model User {
   lastName   String?
   points     Int     @default(0)
   gender     String?
+  location   String[] // Array of strings for location
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }

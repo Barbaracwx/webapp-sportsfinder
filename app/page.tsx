@@ -244,7 +244,7 @@ export default function Home() {
         Increase Points
       </button>
 
-      {/* Save gender Button */}
+      {/* Save profile Button */}
       <button
         onClick={handleSaveProfile}
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"
