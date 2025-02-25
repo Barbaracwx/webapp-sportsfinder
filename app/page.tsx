@@ -235,10 +235,6 @@ export default function Home() {
         ))}
       </div>
 
-      <h2 className="text-2xl font-bold mb-4">Match Preferences</h2>
-
-
-
       {/* Save profile Button */}
       <button
         onClick={handleSaveProfile}
