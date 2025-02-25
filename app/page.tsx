@@ -12,10 +12,14 @@ declare global {
 }
 
 export default function Home() {
+  
   const [user, setUser] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [notification, setNotification] = useState('')
   const [sports, setSports] = useState<{ [key: string]: string }>({})
+  const [gender, setGender] = useState<string>('')
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]) 
+  
 
   /* to add in user if not in the database yet */
   useEffect(() => {
@@ -78,7 +82,7 @@ export default function Home() {
     }
   }
 
-  const handleGenderSubmit = async () => {
+  const handleSaveProfile = async () => {
     if (!user) return
 
     try {
@@ -90,44 +94,43 @@ export default function Home() {
         body: JSON.stringify({
           telegramId: user.telegramId, // pass the user telegram ID
           gender: user.gender, // pass the selected gender
+          location: selectedLocations, //pass selected locations
         }),
       })
       const data = await res.json()
 
       if (data.success) {
-        setUser({ ...user, gender: data.gender })
+        setUser({ ...user, gender: data.gender, location: selectedLocations })
       } else {
-        setError('Failed to save gender')
+        setError('Failed to save profile')
       }
     } catch (err) {
-      setError('An error occurred while saving gender')
+      setError('An error occurred while saving profile')
     }
   }
 
-  const handleSportChange = (sport: string, selected: boolean) => {
-    if (selected) {
-      setSports((prev) => ({ ...prev, [sport]: 'Newbie' }))
-    } else {
-      setSports((prev) => {
-        const newSports = { ...prev }
-        delete newSports[sport]
-        return newSports
-      })
+    const handleSportChange = (sport: string, selected: boolean) => {
+      if (selected) {
+        setSports((prev) => ({ ...prev, [sport]: 'Newbie' }))
+      } else {
+        setSports((prev) => {
+          const newSports = { ...prev }
+          delete newSports[sport]
+          return newSports
+        })
+      }
     }
-  }
 
   const handleSkillLevelChange = (sport: string, level: string) => {
     setSports((prev) => ({ ...prev, [sport]: level }))
   }
 
   const handleLocationChange = (location: string) => {
-    setUser((prevUser: any) => {
-      const updatedLocations = prevUser.location.includes(location)
-        ? prevUser.location.filter((loc: string) => loc !== location) // Remove location if already selected
-        : [...prevUser.location, location] // Add location if not selected
-
-      return { ...prevUser, location: updatedLocations }
-    })
+    setSelectedLocations((prevLocations) =>
+      prevLocations.includes(location)
+        ? prevLocations.filter((loc) => loc !== location)
+        : [...prevLocations, location]
+    )
   }
 
   if (error) {
@@ -187,22 +190,19 @@ export default function Home() {
       {/* Preferred Location Selection */}
       <div className="mt-6">
         <label className="block text-lg font-medium mb-2">Where is your preferred location for games?</label>
-        <div className="flex items-center gap-6">
-          {['North', 'South', 'East', 'West', 'Central'].map((location) => (
-            <label key={location} className="flex items-center">
-              <input
-                type="checkbox"
-                name="location"
-                value={location}
-                checked={user.location.includes(location)}
-                onChange={() => handleLocationChange(location)}
-                className="mr-2"
-              />
-              {location}
-            </label>
-          ))}
-        </div>
+        {['North', 'South', 'East', 'West', 'Central'].map((location) => (
+          <div key={location} className="flex items-center gap-2 mb-2">
+            <input
+              type="checkbox"
+              checked={selectedLocations.includes(location)}
+              onChange={() => handleLocationChange(location)}
+              className="mr-2"
+            />
+            {location}
+          </div>
+        ))}
       </div>
+
 
       {/* Sports Selection */}
       <div className="mt-6">
@@ -246,7 +246,7 @@ export default function Home() {
 
       {/* Save gender Button */}
       <button
-        onClick={handleGenderSubmit}
+        onClick={handleSaveProfile}
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"
       >
         Save Profile
