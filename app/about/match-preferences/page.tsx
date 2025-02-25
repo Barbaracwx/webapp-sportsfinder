@@ -54,7 +54,7 @@ export default function MatchPreferencesPage() {
               // Initialize age ranges for each sport
               const initialAgeRanges: { [key: string]: [number, number] } = {};
               Object.keys(data.sports || {}).forEach((sport) => {
-                initialAgeRanges[sport] = [18, 60]; // Default age range for each sport
+                initialAgeRanges[sport] = [1, 60]; // Default age range for each sport (min: 1, max: 60)
               });
               setAgeRanges(initialAgeRanges);
             }
@@ -135,9 +135,9 @@ export default function MatchPreferencesPage() {
           <div className="flex items-center gap-4">
             <input
               type="range"
-              min={18}
-              max={60}
-              value={ageRanges[sport]?.[0] || 18}
+              min={1} // Minimum age range set to 1
+              max={60} // Maximum age range set to 60
+              value={ageRanges[sport]?.[0] || 1} // Default to 1 if not set
               onChange={(e) => {
                 const newMin = Number(e.target.value);
                 const currentMax = ageRanges[sport]?.[1] || 60;
@@ -147,12 +147,12 @@ export default function MatchPreferencesPage() {
             />
             <input
               type="range"
-              min={1}
-              max={100}
-              value={ageRanges[sport]?.[1] || 60}
+              min={1} // Minimum age range set to 1
+              max={60} // Maximum age range set to 60
+              value={ageRanges[sport]?.[1] || 60} // Default to 60 if not set
               onChange={(e) => {
                 const newMax = Number(e.target.value);
-                const currentMin = ageRanges[sport]?.[0] || 18;
+                const currentMin = ageRanges[sport]?.[0] || 1;
                 handleAgeRangeChange(sport, currentMin, newMax);
               }}
               className="w-full"
