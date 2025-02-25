@@ -72,31 +72,6 @@ export default function Home() {
     }
   }, [])
 
-  /* to increase points function in database */
-  const handleIncreasePoints = async () => {
-    if (!user) return
-
-    try {
-      const res = await fetch('/api/increase-points', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ telegramId: user.telegramId }),
-      })
-      const data = await res.json()
-      if (data.success) {
-        setUser({ ...user, points: data.points })
-        setNotification('Points increased successfully!')
-        setTimeout(() => setNotification(''), 3000)
-      } else {
-        setError('Failed to increase points')
-      }
-    } catch (err) {
-      setError('An error occurred while increasing points')
-    }
-  }
-
   /*to save profile data in database*/
   const handleSaveProfile = async () => {
     if (!user) return
