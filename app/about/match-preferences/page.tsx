@@ -28,6 +28,7 @@ export default function MatchPreferencesPage() {
   const [ageRanges, setAgeRanges] = useState<{ [key: string]: [number, number] }>({}); // Store age ranges for each sport
   const [genderPreferences, setGenderPreferences] = useState<{ [key: string]: string }>({}); // Store gender preferences for each sport
   const [skillLevels, setSkillLevels] = useState<{ [key: string]: string[] }>({}); // Store skill levels for each sport
+  const [locationPreferences, setLocationPreferences] = useState<{ [key: string]: string[] }>({}); // Store location preferences for each sport
 
   /* Fetch user data */
   useEffect(() => {
@@ -53,18 +54,21 @@ export default function MatchPreferencesPage() {
             } else {
               setUser(data);
 
-              // Initialize age ranges, gender preferences, and skill levels for each sport
+              // Initialize age ranges, gender preferences, skill levels, and location preferences for each sport
               const initialAgeRanges: { [key: string]: [number, number] } = {};
               const initialGenderPreferences: { [key: string]: string } = {};
               const initialSkillLevels: { [key: string]: string[] } = {};
+              const initialLocationPreferences: { [key: string]: string[] } = {};
               Object.keys(data.sports || {}).forEach((sport) => {
                 initialAgeRanges[sport] = [1, 60]; // Default age range for each sport (min: 1, max: 60)
                 initialGenderPreferences[sport] = 'Anything'; // Default gender preference for each sport
                 initialSkillLevels[sport] = []; // Default skill levels (empty array)
+                initialLocationPreferences[sport] = []; // Default location preferences (empty array)
               });
               setAgeRanges(initialAgeRanges);
               setGenderPreferences(initialGenderPreferences);
               setSkillLevels(initialSkillLevels);
+              setLocationPreferences(initialLocationPreferences);
             }
           })
           .catch((err) => {
@@ -107,6 +111,19 @@ export default function MatchPreferencesPage() {
     });
   };
 
+  /* Handle location preference change for a sport */
+  const handleLocationPreferenceChange = (sport: string, location: string, isChecked: boolean) => {
+    setLocationPreferences((prev) => {
+      const updatedLocations = isChecked
+        ? [...(prev[sport] || []), location] // Add location
+        : (prev[sport] || []).filter((loc) => loc !== location); // Remove location
+      return {
+        ...prev,
+        [sport]: updatedLocations,
+      };
+    });
+  };
+
   /* Handle form submission */
   const handleSubmit = async () => {
     if (!user) return;
@@ -131,6 +148,7 @@ export default function MatchPreferencesPage() {
           ageRanges, // Send age ranges for each sport
           genderPreferences, // Send gender preferences for each sport
           skillLevels, // Send skill levels for each sport
+          locationPreferences, // Send location preferences for each sport
         }),
       });
       const data = await res.json();
@@ -223,6 +241,22 @@ export default function MatchPreferencesPage() {
                   className="mr-2"
                 />
                 {level}
+              </label>
+            ))}
+          </div>
+
+          {/* Location preference question */}
+          <p className="mt-4 mb-2">Choose preferred location to find matches:</p>
+          <div className="flex flex-col gap-2">
+            {['North', 'South', 'East', 'West', 'Central'].map((location) => (
+              <label key={location} className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={(locationPreferences[sport] || []).includes(location)}
+                  onChange={(e) => handleLocationPreferenceChange(sport, location, e.target.checked)}
+                  className="mr-2"
+                />
+                {location}
               </label>
             ))}
           </div>
