@@ -27,6 +27,7 @@ export default function MatchPreferencesPage() {
   const [notification, setNotification] = useState<string | null>(null); // For success/error notifications
   const [ageRanges, setAgeRanges] = useState<{ [key: string]: [number, number] }>({}); // Store age ranges for each sport
   const [genderPreferences, setGenderPreferences] = useState<{ [key: string]: string }>({}); // Store gender preferences for each sport
+  const [skillLevels, setSkillLevels] = useState<{ [key: string]: string[] }>({}); // Store skill levels for each sport
 
   /* Fetch user data */
   useEffect(() => {
@@ -52,15 +53,18 @@ export default function MatchPreferencesPage() {
             } else {
               setUser(data);
 
-              // Initialize age ranges and gender preferences for each sport
+              // Initialize age ranges, gender preferences, and skill levels for each sport
               const initialAgeRanges: { [key: string]: [number, number] } = {};
               const initialGenderPreferences: { [key: string]: string } = {};
+              const initialSkillLevels: { [key: string]: string[] } = {};
               Object.keys(data.sports || {}).forEach((sport) => {
                 initialAgeRanges[sport] = [1, 60]; // Default age range for each sport (min: 1, max: 60)
                 initialGenderPreferences[sport] = 'Anything'; // Default gender preference for each sport
+                initialSkillLevels[sport] = []; // Default skill levels (empty array)
               });
               setAgeRanges(initialAgeRanges);
               setGenderPreferences(initialGenderPreferences);
+              setSkillLevels(initialSkillLevels);
             }
           })
           .catch((err) => {
@@ -90,6 +94,19 @@ export default function MatchPreferencesPage() {
     }));
   };
 
+  /* Handle skill level change for a sport */
+  const handleSkillLevelChange = (sport: string, level: string, isChecked: boolean) => {
+    setSkillLevels((prev) => {
+      const updatedLevels = isChecked
+        ? [...(prev[sport] || []), level] // Add skill level
+        : (prev[sport] || []).filter((l) => l !== level); // Remove skill level
+      return {
+        ...prev,
+        [sport]: updatedLevels,
+      };
+    });
+  };
+
   /* Handle form submission */
   const handleSubmit = async () => {
     if (!user) return;
@@ -113,6 +130,7 @@ export default function MatchPreferencesPage() {
           telegramId: user.telegramId,
           ageRanges, // Send age ranges for each sport
           genderPreferences, // Send gender preferences for each sport
+          skillLevels, // Send skill levels for each sport
         }),
       });
       const data = await res.json();
@@ -189,6 +207,22 @@ export default function MatchPreferencesPage() {
                   className="mr-2"
                 />
                 {option}
+              </label>
+            ))}
+          </div>
+
+          {/* Skill level question */}
+          <p className="mt-4 mb-2">Choose the skill level of players you'd like to match with:</p>
+          <div className="flex flex-col gap-2">
+            {['Newbie', 'Beginner', 'Intermediate', 'Pro'].map((level) => (
+              <label key={level} className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={(skillLevels[sport] || []).includes(level)}
+                  onChange={(e) => handleSkillLevelChange(sport, level, e.target.checked)}
+                  className="mr-2"
+                />
+                {level}
               </label>
             ))}
           </div>
