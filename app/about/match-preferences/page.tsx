@@ -24,7 +24,7 @@ interface User {
 export default function MatchPreferencesPage() {
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [notification, setNotification] = useState('');
+  const [notification, setNotification] = useState<string | null>(null); // For success/error notifications
   const [ageRanges, setAgeRanges] = useState<{ [key: string]: [number, number] }>({}); // Store age ranges for each sport
 
   /* Fetch user data */
@@ -86,7 +86,7 @@ export default function MatchPreferencesPage() {
     for (const sport of Object.keys(ageRanges)) {
       const [min, max] = ageRanges[sport];
       if (min > max) {
-        setError(`Invalid age range for ${sport}: Minimum age cannot be greater than maximum age.`);
+        setNotification(`Invalid age range for ${sport}: Minimum age cannot be greater than maximum age.`);
         return; // Stop submission if any range is invalid
       }
     }
@@ -106,13 +106,12 @@ export default function MatchPreferencesPage() {
 
       if (data.success) {
         setNotification('Match preferences saved successfully!');
-        setTimeout(() => setNotification(''), 3000);
-        setError(null); // Clear any previous errors
+        setTimeout(() => setNotification(null), 3000); // Clear notification after 3 seconds
       } else {
-        setError('Failed to save match preferences');
+        setNotification('Failed to save match preferences');
       }
     } catch (err) {
-      setError('An error occurred while saving match preferences');
+      setNotification('An error occurred while saving match preferences');
     }
   };
 
@@ -148,8 +147,8 @@ export default function MatchPreferencesPage() {
             />
             <input
               type="range"
-              min={18}
-              max={60}
+              min={1}
+              max={100}
               value={ageRanges[sport]?.[1] || 60}
               onChange={(e) => {
                 const newMax = Number(e.target.value);
@@ -177,8 +176,14 @@ export default function MatchPreferencesPage() {
 
       {/* Notification */}
       {notification && (
-        <div className="mt-4 p-2 bg-green-100 text-green-700 rounded">
-          {notification}
+        <div className="mt-4 p-2 bg-yellow-100 text-yellow-700 rounded flex justify-between items-center">
+          <span>{notification}</span>
+          <button
+            onClick={() => setNotification(null)} // Close the notification
+            className="text-yellow-700 hover:text-yellow-900"
+          >
+            &times;
+          </button>
         </div>
       )}
     </div>
