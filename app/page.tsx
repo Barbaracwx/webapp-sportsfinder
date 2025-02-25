@@ -16,7 +16,9 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [notification, setNotification] = useState('')
   const [sports, setSports] = useState<{ [key: string]: string }>({})
+  const [gender, setGender] = useState<string>('')
 
+  /* to add in user if not in the database yet*/
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp
@@ -52,6 +54,7 @@ export default function Home() {
     }
   }, [])
 
+  /* to increase points function in database*/
   const handleIncreasePoints = async () => {
     if (!user) return
 
@@ -70,6 +73,31 @@ export default function Home() {
         setTimeout(() => setNotification(''), 3000)
       } else {
         setError('Failed to increase points')
+      }
+    } catch (err) {
+      setError('An error occurred while increasing points')
+    }
+  }
+
+  const handleGenderSubmit = async () => {
+    if (!user) return
+
+    try {
+      const res = await fetch('/api/save-profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },  
+        body: JSON.stringify({ 
+          telegramId: user.telegramId, //pass the user telegram ID
+          gender: user.gender, }), // pass the selected gender
+      })
+      const data = await res.json()
+
+      if (data.success) {
+        setUser({ ...user, gender: data.gender })
+      } else {
+        setError('Failed to save gender')
       }
     } catch (err) {
       setError('An error occurred while increasing points')
@@ -246,6 +274,14 @@ export default function Home() {
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"
       >
         Increase Points
+      </button>
+
+      {/* Save gender Button */}
+      <button
+        onClick={handleGenderSubmit}
+        className="bg-blue-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded mt-4"
+      >
+        Save Profile
       </button>
 
       {notification && (
