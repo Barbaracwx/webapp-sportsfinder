@@ -3,15 +3,6 @@
 import { useEffect, useState } from 'react';
 import { WebApp } from '@twa-dev/types';
 
-interface User {
-  telegramId: string;
-  firstName: string;
-  gender: string;
-  age: number;
-  points: number;
-  location: string[];
-}
-
 declare global {
   interface Window {
     Telegram?: {
@@ -20,16 +11,23 @@ declare global {
   }
 }
 
-export default function Home() {
+interface User {
+  telegramId: string;
+  firstName: string;
+  gender: string;
+  age: number;
+  points: number;
+  location: string[];
+  sports: { [key: string]: string }; // Sports data
+}
+
+export default function MatchPreferencesPage() {
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notification, setNotification] = useState<string | null>(null); // For success/error notifications
-  const [sports, setSports] = useState<{ [key: string]: string }>({});
-  const [gender, setGender] = useState<string>('');
-  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
-  const [matchPreference, setMatchPreference] = useState<string>(''); // New state for match preference
+  const [ageRanges, setAgeRanges] = useState<{ [key: string]: [number, number] }>({}); // Store age ranges for each sport
 
-  /* to add in user if not in the database yet */
+  /* Fetch user data */
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
@@ -52,12 +50,13 @@ export default function Home() {
               setError(data.error);
             } else {
               setUser(data);
-              setGender(data.gender);
-              setSelectedLocations(data.location || []);
-              setSports(data.sports || {});
-              setMatchPreference(data.matchPreference || ''); // Initialize match preference
-              // Ensure age is set from the database
-              setUser((prevUser) => (prevUser ? { ...prevUser, age: data.age || 18 } : null));
+
+              // Initialize age ranges for each sport
+              const initialAgeRanges: { [key: string]: [number, number] } = {};
+              Object.keys(data.sports || {}).forEach((sport) => {
+                initialAgeRanges[sport] = [1, 60]; // Default age range for each sport (min: 1, max: 60)
+              });
+              setAgeRanges(initialAgeRanges);
             }
           })
           .catch((err) => {
@@ -71,84 +70,49 @@ export default function Home() {
     }
   }, []);
 
-  /*to save profile data in database*/
-  const handleSaveProfile = async () => {
+  /* Handle age range change for a sport */
+  const handleAgeRangeChange = (sport: string, min: number, max: number) => {
+    setAgeRanges((prev) => ({
+      ...prev,
+      [sport]: [min, max],
+    }));
+  };
+
+  /* Handle form submission */
+  const handleSubmit = async () => {
     if (!user) return;
 
-    // Validate gender, location, sports, and match preference
-    if (!gender) {
-      setNotification('Please select your gender.');
-      return;
-    }
-    if (selectedLocations.length === 0) {
-      setNotification('Please select at least one preferred location.');
-      return;
-    }
-    if (Object.keys(sports).length === 0) {
-      setNotification('Please select at least one sport.');
-      return;
-    }
-    if (!matchPreference) {
-      setNotification('Please select who you want to be matched with.');
-      return;
+    // Validate age ranges before submission
+    for (const sport of Object.keys(ageRanges)) {
+      const [min, max] = ageRanges[sport];
+      if (min > max) {
+        setNotification(`Invalid age range for ${sport}: Minimum age cannot be greater than maximum age.`);
+        return; // Stop submission if any range is invalid
+      }
     }
 
     try {
-      const currentAge = user.age; // Capture the current age
-      const res = await fetch('/api/save-profile', {
+      const res = await fetch('/api/save-match-preferences', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           telegramId: user.telegramId,
-          gender: user.gender,
-          location: selectedLocations,
-          age: currentAge, // Use the captured age
-          sports: sports, // Send the sports data
-          matchPreference, // Send the match preference
+          ageRanges, // Send age ranges for each sport
         }),
       });
       const data = await res.json();
 
       if (data.success) {
-        setUser({ ...user, gender: data.gender, location: selectedLocations, age: data.age });
-        setNotification('Profile saved successfully!');
-        setTimeout(() => setNotification(null), 3000);
-
+        setNotification('Match preferences saved successfully!');
+        setTimeout(() => setNotification(null), 3000); // Clear notification after 3 seconds
       } else {
-        setError('Failed to save profile');
+        setNotification('Failed to save match preferences');
       }
     } catch (err) {
-      setError('An error occurred while saving profile');
+      setNotification('An error occurred while saving match preferences');
     }
-  };
-
-  /*update sports choices*/
-  const handleSportChange = (sport: string, selected: boolean) => {
-    if (selected) {
-      setSports((prev) => ({ ...prev, [sport]: 'Newbie' }));
-    } else {
-      setSports((prev) => {
-        const newSports = { ...prev };
-        delete newSports[sport];
-        return newSports;
-      });
-    }
-  };
-
-  /*update skill level*/
-  const handleSkillLevelChange = (sport: string, level: string) => {
-    setSports((prev) => ({ ...prev, [sport]: level }));
-  };
-
-  /*handle location change*/
-  const handleLocationChange = (location: string) => {
-    setSelectedLocations((prevLocations) =>
-      prevLocations.includes(location)
-        ? prevLocations.filter((loc) => loc !== location)
-        : [...prevLocations, location]
-    );
   };
 
   if (error) {
@@ -159,144 +123,55 @@ export default function Home() {
 
   return (
     <div className="container mx-auto p-4 text-black min-h-screen" style={{ backgroundColor: '#d9f8e1' }}>
-      <h1 className="text-2xl font-bold mb-4">Welcome, {user.firstName}!</h1>
-      <h2 className="text-2xl font-bold mb-4">Profile Page</h2>
+      <h1 className="text-2xl font-bold mb-4">Match Preferences</h1>
 
-      {/* Age Slider */}
-      <div className="mt-6">
-        <label className="block text-lg font-medium mb-2">What is your age?</label>
-        <input
-          type="range"
-          min="1"
-          max="100"
-          value={user.age || 18} // Default to 18 if age is not set
-          onChange={(e) => setUser({ ...user, age: Number(e.target.value) })} // Convert to number
-          className="w-full cursor-pointer"
-        />
-        <p className="mt-2 text-center text-lg font-semibold">{user.age || 18} years old</p>
-      </div>
+      {/* Loop through the user's selected sports */}
+      {Object.keys(user.sports || {}).map((sport) => (
+        <div key={sport} className="mb-6">
+          <h2 className="text-xl font-semibold mb-2">{sport}</h2>
+          <p className="mb-2">What is your preferred age range for matching?</p>
 
-      {/* Gender Selection */}
-      <div className="mt-6">
-        <label className="block text-lg font-medium mb-2">What is your gender?</label>
-        <div className="flex items-center gap-6">
-          <label className="flex items-center">
+          {/* Double range slider for age range */}
+          <div className="flex items-center gap-4">
             <input
-              type="radio"
-              name="gender"
-              value="Male"
-              checked={user.gender === 'Male'}
-              onChange={(e) => setUser({ ...user, gender: e.target.value })}
-              className="mr-2"
+              type="range"
+              min={1} // Minimum age range set to 1
+              max={100} // Maximum age range set to 60
+              value={ageRanges[sport]?.[0] || 1} // Default to 1 if not set
+              onChange={(e) => {
+                const newMin = Number(e.target.value);
+                const currentMax = ageRanges[sport]?.[1] || 100;
+                handleAgeRangeChange(sport, newMin, currentMax);
+              }}
+              className="w-full"
             />
-            Male
-          </label>
-          <label className="flex items-center">
             <input
-              type="radio"
-              name="gender"
-              value="Female"
-              checked={user.gender === 'Female'}
-              onChange={(e) => setUser({ ...user, gender: e.target.value })}
-              className="mr-2"
+              type="range"
+              min={1} // Minimum age range set to 1
+              max={100} // Maximum age range set to 60
+              value={ageRanges[sport]?.[1] || 100} // Default to 60 if not set
+              onChange={(e) => {
+                const newMax = Number(e.target.value);
+                const currentMin = ageRanges[sport]?.[0] || 1;
+                handleAgeRangeChange(sport, currentMin, newMax);
+              }}
+              className="w-full"
             />
-            Female
-          </label>
-        </div>
-      </div>
-
-      {/* Preferred Location Selection */}
-      <div className="mt-6">
-        <label className="block text-lg font-medium mb-2">Where is your preferred location for games?</label>
-        {['North', 'South', 'East', 'West', 'Central'].map((location) => (
-          <div key={location} className="flex items-center gap-2 mb-2">
-            <input
-              type="checkbox"
-              checked={selectedLocations.includes(location)}
-              onChange={() => handleLocationChange(location)}
-              className="mr-2"
-            />
-            {location}
           </div>
-        ))}
-      </div>
 
-      {/* Sports Selection */}
-      <div className="mt-6">
-        <label className="block text-lg font-medium mb-2">What sports do you play?</label>
-        {['Tennis', 'Badminton', 'Table Tennis', 'Pickleball'].map((sport) => (
-          <div key={sport} className="flex items-center gap-4 mb-2">
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={!!sports[sport]}
-                onChange={(e) => handleSportChange(sport, e.target.checked)}
-                className="mr-2"
-              />
-              {sport}
-            </label>
-            {sports[sport] && (
-              <select
-                value={sports[sport]}
-                onChange={(e) => handleSkillLevelChange(sport, e.target.value)}
-                className="p-1 border rounded"
-              >
-                <option value="Newbie">Newbie</option>
-                <option value="Beginner">Beginner</option>
-                <option value="Intermediate">Intermediate</option>
-                <option value="Pro">Pro</option>
-              </select>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Match Preference Selection */}
-      <div className="mt-6">
-        <label className="block text-lg font-medium mb-2">Would you prefer to match with people of the same gender?</label>
-        <div className="flex items-center gap-6">
-          <label className="flex items-center">
-            <input
-              type="radio"
-              name="matchPreference"
-              value="Male"
-              checked={matchPreference === 'Male'}
-              onChange={(e) => setMatchPreference(e.target.value)}
-              className="mr-2"
-            />
-            Male
-          </label>
-          <label className="flex items-center">
-            <input
-              type="radio"
-              name="matchPreference"
-              value="Female"
-              checked={matchPreference === 'Female'}
-              onChange={(e) => setMatchPreference(e.target.value)}
-              className="mr-2"
-            />
-            Female
-          </label>
-          <label className="flex items-center">
-            <input
-              type="radio"
-              name="matchPreference"
-              value="Anything"
-              checked={matchPreference === 'Anything'}
-              onChange={(e) => setMatchPreference(e.target.value)}
-              className="mr-2"
-            />
-            Anything
-          </label>
+          {/* Display selected age range */}
+          <p className="mt-2 text-center">
+            Age range: {ageRanges[sport]?.[0]} - {ageRanges[sport]?.[1]}
+          </p>
         </div>
-      </div>
+      ))}
 
-      {/* Save profile Button */}
+      {/* Submit button */}
       <button
-        onClick={handleSaveProfile}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4 block mx-auto"
+        onClick={handleSubmit}
+        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"
       >
-        Save Profile
+        Submit
       </button>
 
       {/* Notification */}
