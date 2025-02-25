@@ -120,7 +120,9 @@ export default function Home() {
 
       if (data.success) {
         setUser({ ...user, gender: data.gender, location: selectedLocations, age: data.age })
-        
+        setNotification('Profile saved successfully!');
+        setTimeout(() => setNotification(''), 3000);
+
         // Navigate to /about/match-preferences after saving
         router.push('/about/match-preferences');
       } else {
