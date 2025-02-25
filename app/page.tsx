@@ -3,6 +3,15 @@
 import { useEffect, useState } from 'react'
 import { WebApp } from '@twa-dev/types'
 
+interface User {
+  telegramId: string
+  firstName: string
+  gender: string
+  age: number
+  points: number
+  location: string[]
+}
+
 declare global {
   interface Window {
     Telegram?: {
@@ -12,14 +21,12 @@ declare global {
 }
 
 export default function Home() {
-  
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [notification, setNotification] = useState('')
   const [sports, setSports] = useState<{ [key: string]: string }>({})
-  const [gender, setGender] = useState<string>('') 
+  const [gender, setGender] = useState<string>('')
   const [selectedLocations, setSelectedLocations] = useState<string[]>([])
-  
 
   /* to add in user if not in the database yet */
   useEffect(() => {
@@ -46,6 +53,8 @@ export default function Home() {
               setUser(data)
               setGender(data.gender)
               setSelectedLocations(data.location || [])
+              // Ensure age is set from the database
+              setUser((prevUser) => (prevUser ? { ...prevUser, age: data.age || 18 } : null))
             }
           })
           .catch((err) => {
@@ -84,25 +93,28 @@ export default function Home() {
     }
   }
 
+  /*to save profile data in database*/
   const handleSaveProfile = async () => {
     if (!user) return
 
     try {
+      const currentAge = user.age // Capture the current age
       const res = await fetch('/api/save-profile', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          telegramId: user.telegramId, // pass the user telegram ID
-          gender: user.gender, // pass the selected gender
-          location: selectedLocations, //pass selected locations
+          telegramId: user.telegramId,
+          gender: user.gender,
+          location: selectedLocations,
+          age: currentAge, // Use the captured age
         }),
       })
       const data = await res.json()
 
       if (data.success) {
-        setUser({ ...user, gender: data.gender, location: selectedLocations })
+        setUser({ ...user, gender: data.gender, location: selectedLocations, age: data.age })
       } else {
         setError('Failed to save profile')
       }
@@ -111,22 +123,25 @@ export default function Home() {
     }
   }
 
-    const handleSportChange = (sport: string, selected: boolean) => {
-      if (selected) {
-        setSports((prev) => ({ ...prev, [sport]: 'Newbie' }))
-      } else {
-        setSports((prev) => {
-          const newSports = { ...prev }
-          delete newSports[sport]
-          return newSports
-        })
-      }
+  /*update sports choices*/
+  const handleSportChange = (sport: string, selected: boolean) => {
+    if (selected) {
+      setSports((prev) => ({ ...prev, [sport]: 'Newbie' }))
+    } else {
+      setSports((prev) => {
+        const newSports = { ...prev }
+        delete newSports[sport]
+        return newSports
+      })
     }
+  }
 
+  /*update skill level*/
   const handleSkillLevelChange = (sport: string, level: string) => {
     setSports((prev) => ({ ...prev, [sport]: level }))
   }
 
+  /*handle location change*/
   const handleLocationChange = (location: string) => {
     setSelectedLocations((prevLocations) =>
       prevLocations.includes(location)
@@ -154,7 +169,7 @@ export default function Home() {
           min="1"
           max="100"
           value={user.age || 18} // Default to 18 if age is not set
-          onChange={(e) => setUser({ ...user, age: e.target.value })}
+          onChange={(e) => setUser({ ...user, age: Number(e.target.value) })} // Convert to number
           className="w-full cursor-pointer"
         />
         <p className="mt-2 text-center text-lg font-semibold">{user.age || 18} years old</p>
@@ -204,7 +219,6 @@ export default function Home() {
           </div>
         ))}
       </div>
-
 
       {/* Sports Selection */}
       <div className="mt-6">
