@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { WebApp } from '@twa-dev/types'
+import { useRouter } from 'next/navigation';
 
 interface User {
   telegramId: string
@@ -27,6 +28,8 @@ export default function Home() {
   const [sports, setSports] = useState<{ [key: string]: string }>({})
   const [gender, setGender] = useState<string>('')
   const [selectedLocations, setSelectedLocations] = useState<string[]>([])
+
+  const router = useRouter(); // Initialize the router
 
   /* to add in user if not in the database yet */
   useEffect(() => {
@@ -117,6 +120,9 @@ export default function Home() {
 
       if (data.success) {
         setUser({ ...user, gender: data.gender, location: selectedLocations, age: data.age })
+        
+        // Navigate to /about/match-preferences after saving
+        router.push('/about/match-preferences');
       } else {
         setError('Failed to save profile')
       }
@@ -252,14 +258,20 @@ export default function Home() {
         ))}
       </div>
 
+      <h2 className="text-2xl font-bold mb-4">Match Preferences</h2>
+
+
+
       {/* Save profile Button */}
       <button
         onClick={handleSaveProfile}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"
+        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4 block mx-auto"
       >
         Save Profile
       </button>
 
+
+      {/*just in case i want a notification*/}
       {notification && (
         <div className="mt-4 p-2 bg-green-100 text-green-700 rounded">
           {notification}
