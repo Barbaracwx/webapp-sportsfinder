@@ -72,6 +72,14 @@ export default function MatchPreferencesPage() {
 
   /* Handle age range change for a sport */
   const handleAgeRangeChange = (sport: string, min: number, max: number) => {
+    // Ensure min is always less than or equal to max
+    if (min > max) {
+      min = max; // Adjust min to be equal to max if it exceeds max
+    }
+    if (max < min) {
+      max = min; // Adjust max to be equal to min if it falls below min
+    }
+
     setAgeRanges((prev) => ({
       ...prev,
       [sport]: [min, max],
@@ -129,9 +137,11 @@ export default function MatchPreferencesPage() {
               min={18}
               max={60}
               value={ageRanges[sport]?.[0] || 18}
-              onChange={(e) =>
-                handleAgeRangeChange(sport, Number(e.target.value), ageRanges[sport]?.[1] || 60)
-              }
+              onChange={(e) => {
+                const newMin = Number(e.target.value);
+                const currentMax = ageRanges[sport]?.[1] || 60;
+                handleAgeRangeChange(sport, newMin, currentMax);
+              }}
               className="w-full"
             />
             <input
@@ -139,9 +149,11 @@ export default function MatchPreferencesPage() {
               min={18}
               max={60}
               value={ageRanges[sport]?.[1] || 60}
-              onChange={(e) =>
-                handleAgeRangeChange(sport, ageRanges[sport]?.[0] || 18, Number(e.target.value))
-              }
+              onChange={(e) => {
+                const newMax = Number(e.target.value);
+                const currentMin = ageRanges[sport]?.[0] || 18;
+                handleAgeRangeChange(sport, currentMin, newMax);
+              }}
               className="w-full"
             />
           </div>
