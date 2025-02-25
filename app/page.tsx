@@ -252,16 +252,6 @@ export default function Home() {
         ))}
       </div>
 
-      <p>Your current points: {user.points}</p>
-
-      {/* Increase Points Button */}
-      <button
-        onClick={handleIncreasePoints}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"
-      >
-        Increase Points
-      </button>
-
       {/* Save profile Button */}
       <button
         onClick={handleSaveProfile}

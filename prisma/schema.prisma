@@ -13,7 +13,6 @@ model User {
   username   String?
   firstName  String?
   lastName   String?
-  points     Int     @default(0)
   age        Int?
   gender     String?
   location   String[] // Array of strings for location
