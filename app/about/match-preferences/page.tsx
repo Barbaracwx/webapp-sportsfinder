@@ -136,11 +136,11 @@ export default function MatchPreferencesPage() {
             <input
               type="range"
               min={1} // Minimum age range set to 1
-              max={60} // Maximum age range set to 60
+              max={100} // Maximum age range set to 60
               value={ageRanges[sport]?.[0] || 1} // Default to 1 if not set
               onChange={(e) => {
                 const newMin = Number(e.target.value);
-                const currentMax = ageRanges[sport]?.[1] || 60;
+                const currentMax = ageRanges[sport]?.[1] || 100;
                 handleAgeRangeChange(sport, newMin, currentMax);
               }}
               className="w-full"
