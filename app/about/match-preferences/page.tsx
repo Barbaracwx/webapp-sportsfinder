@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { WebApp } from '@twa-dev/types';
-import { useRouter } from 'next/navigation';
 
 interface User {
   telegramId: string;
@@ -29,8 +28,6 @@ export default function Home() {
   const [gender, setGender] = useState<string>('');
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [matchPreference, setMatchPreference] = useState<string>(''); // New state for match preference
-
-  const router = useRouter(); // Initialize the router
 
   /* to add in user if not in the database yet */
   useEffect(() => {
@@ -256,7 +253,7 @@ export default function Home() {
 
       {/* Match Preference Selection */}
       <div className="mt-6">
-        <label className="block text-lg font-medium mb-2">Who do you want to be matched with?</label>
+        <label className="block text-lg font-medium mb-2">Would you prefer to match with people of the same gender?</label>
         <div className="flex items-center gap-6">
           <label className="flex items-center">
             <input
