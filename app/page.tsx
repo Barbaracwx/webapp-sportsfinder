@@ -16,9 +16,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null)
   const [notification, setNotification] = useState('')
   const [sports, setSports] = useState<{ [key: string]: string }>({})
-  const [gender, setGender] = useState<string>('')
 
-  /* to add in user if not in the database yet*/
+  /* to add in user if not in the database yet */
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp
@@ -54,7 +53,7 @@ export default function Home() {
     }
   }, [])
 
-  /* to increase points function in database*/
+  /* to increase points function in database */
   const handleIncreasePoints = async () => {
     if (!user) return
 
@@ -87,10 +86,11 @@ export default function Home() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        },  
-        body: JSON.stringify({ 
-          telegramId: user.telegramId, //pass the user telegram ID
-          gender: user.gender, }), // pass the selected gender
+        },
+        body: JSON.stringify({
+          telegramId: user.telegramId, // pass the user telegram ID
+          gender: user.gender, // pass the selected gender
+        }),
       })
       const data = await res.json()
 
@@ -100,7 +100,7 @@ export default function Home() {
         setError('Failed to save gender')
       }
     } catch (err) {
-      setError('An error occurred while increasing points')
+      setError('An error occurred while saving gender')
     }
   }
 
@@ -118,6 +118,16 @@ export default function Home() {
 
   const handleSkillLevelChange = (sport: string, level: string) => {
     setSports((prev) => ({ ...prev, [sport]: level }))
+  }
+
+  const handleLocationChange = (location: string) => {
+    setUser((prevUser: any) => {
+      const updatedLocations = prevUser.location.includes(location)
+        ? prevUser.location.filter((loc: string) => loc !== location) // Remove location if already selected
+        : [...prevUser.location, location] // Add location if not selected
+
+      return { ...prevUser, location: updatedLocations }
+    })
   }
 
   if (error) {
@@ -178,27 +188,21 @@ export default function Home() {
       <div className="mt-6">
         <label className="block text-lg font-medium mb-2">Where is your preferred location for games?</label>
         <div className="flex items-center gap-6">
-          {["North", "South", "East", "West", "Central"].map((loc) => (
-            <label key={loc} className="flex items-center">
+          {['North', 'South', 'East', 'West', 'Central'].map((location) => (
+            <label key={location} className="flex items-center">
               <input
                 type="checkbox"
                 name="location"
-                value={loc}
-                checked={user.location.includes(loc)}
-                onChange={(e) => {
-                  const newLocation = e.target.checked
-                    ? [...user.location, loc] // Add to array if checked
-                    : user.location.filter((l) => l !== loc); // Remove if unchecked
-                  setUser({ ...user, location: newLocation });
-                }}
+                value={location}
+                checked={user.location.includes(location)}
+                onChange={() => handleLocationChange(location)}
                 className="mr-2"
               />
-              {loc}
+              {location}
             </label>
           ))}
         </div>
       </div>
-
 
       {/* Sports Selection */}
       <div className="mt-6">
@@ -243,7 +247,7 @@ export default function Home() {
       {/* Save gender Button */}
       <button
         onClick={handleGenderSubmit}
-        className="bg-blue-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded mt-4"
+        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"
       >
         Save Profile
       </button>
