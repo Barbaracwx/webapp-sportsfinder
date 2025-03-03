@@ -43,10 +43,10 @@ export default function MatchPreferencesPage() {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
       tg.ready();
-  
+
       const initData = tg.initData || '';
       const initDataUnsafe = tg.initDataUnsafe || {};
-  
+
       if (initDataUnsafe.user) {
         fetch('/api/user', {
           method: 'POST',
@@ -66,23 +66,23 @@ export default function MatchPreferencesPage() {
                 typeof data.matchPreferences === 'string'
                   ? JSON.parse(data.matchPreferences)
                   : data.matchPreferences || {};
-  
+
               setUser({ ...data, sports, matchPreferences });
-  
+
               // Initialize age ranges, gender preferences, skill levels, and location preferences for each sport
               const initialAgeRanges: { [key: string]: [number, number] } = {};
               const initialGenderPreferences: { [key: string]: string } = {};
               const initialSkillLevels: { [key: string]: string[] } = {};
               const initialLocationPreferences: { [key: string]: string[] } = {};
-  
+
               Object.keys(sports).forEach((sport) => {
                 const preferences = matchPreferences[sport] || {};
                 initialAgeRanges[sport] = preferences.ageRange || [1, 60];
-                initialGenderPreferences[sport] = preferences.genderPreference || 'Anything';
+                initialGenderPreferences[sport] = preferences.genderPreference || ''; // Default to empty string
                 initialSkillLevels[sport] = preferences.skillLevels || [];
                 initialLocationPreferences[sport] = preferences.locationPreferences || [];
               });
-  
+
               setAgeRanges(initialAgeRanges);
               setGenderPreferences(initialGenderPreferences);
               setSkillLevels(initialSkillLevels);
@@ -169,12 +169,12 @@ export default function MatchPreferencesPage() {
   /* Handle form submission */
   const handleSubmit = async () => {
     if (!user) return;
-  
+
     // Validate form before submission
     if (!validateForm()) {
       return; // Stop submission if validation fails
     }
-  
+
     // Validate age ranges before submission
     for (const sport of Object.keys(ageRanges)) {
       const [min, max] = ageRanges[sport];
@@ -183,7 +183,7 @@ export default function MatchPreferencesPage() {
         return; // Stop submission if any range is invalid
       }
     }
-  
+
     // Prepare match preferences data
     const matchPreferences: { [key: string]: any } = {};
     Object.keys(user.sports || {}).forEach((sport) => {
@@ -194,7 +194,7 @@ export default function MatchPreferencesPage() {
         locationPreferences: locationPreferences[sport],
       };
     });
-  
+
     try {
       const res = await fetch('/api/save-match-preferences', {
         method: 'POST',
@@ -207,7 +207,7 @@ export default function MatchPreferencesPage() {
         }),
       });
       const data = await res.json();
-  
+
       if (data.success) {
         setNotification('Match preferences saved successfully!');
         setTimeout(() => setNotification(null), 3000); // Clear notification after 3 seconds
