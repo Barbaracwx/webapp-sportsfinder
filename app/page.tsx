@@ -77,7 +77,7 @@ export default function Home() {
     if (!user) return;
 
     // Validate gender, location, and sports
-    if (!gender) {
+    if (!user.gender) {
       setNotification('Please select your gender.');
       return;
     }
@@ -184,7 +184,10 @@ export default function Home() {
               name="gender"
               value="Male"
               checked={user.gender === 'Male'}
-              onChange={(e) => setUser({ ...user, gender: e.target.value })}
+              onChange={(e) => {
+                setUser({ ...user, gender: e.target.value });
+                setGender(e.target.value); // ✅ Correctly updates gender state
+              }}
               className="mr-2"
             />
             Male
@@ -195,7 +198,10 @@ export default function Home() {
               name="gender"
               value="Female"
               checked={user.gender === 'Female'}
-              onChange={(e) => setUser({ ...user, gender: e.target.value })}
+              onChange={(e) => {
+                setUser({ ...user, gender: e.target.value });
+                setGender(e.target.value); // ✅ Correctly updates gender state
+              }}
               className="mr-2"
             />
             Female
