@@ -3,17 +3,20 @@ import { prisma } from '@/lib/prisma';
 
 export async function POST(req: NextRequest) {
   try {
-    const { telegramId, ageRanges } = await req.json();
+    // Parse the request body
+    const { telegramId, matchPreferences } = await req.json();
 
     // Validate input
-    if (!telegramId || !ageRanges) {
+    if (!telegramId || !matchPreferences) {
       return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
     }
 
-    // Save age ranges to the database
+    // Save match preferences to the database
     const updatedUser = await prisma.user.update({
       where: { telegramId },
-      data: { matchPreferences: ageRanges }, // Save age ranges in the database
+      data: {
+        matchPreferences: JSON.stringify(matchPreferences), // Save as JSON string
+      },
     });
 
     return NextResponse.json({ success: true });
