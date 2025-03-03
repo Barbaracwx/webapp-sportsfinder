@@ -11,10 +11,6 @@ interface User {
   age: number;
   points: number;
   location: string[];
-  sports: { [key: string]: string }; // Sports data
-  matchPreferences?: {
-    genderPreference?: string; // Added gender preference
-  };
 }
 
 declare global {
@@ -32,11 +28,10 @@ export default function Home() {
   const [sports, setSports] = useState<{ [key: string]: string }>({});
   const [gender, setGender] = useState<string>('');
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
-  const [genderPreference, setGenderPreference] = useState<string>(''); // State for gender preference
 
   const router = useRouter(); // Initialize the router
 
-  /* Fetch user data */
+  /* to add in user if not in the database yet */
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
@@ -62,11 +57,8 @@ export default function Home() {
               setGender(data.gender);
               setSelectedLocations(data.location || []);
               setSports(data.sports || {});
-
-              // Initialize gender preference from saved data (if it exists)
-              if (data.matchPreferences?.genderPreference) {
-                setGenderPreference(data.matchPreferences.genderPreference);
-              }
+              // Ensure age is set from the database
+              setUser((prevUser) => (prevUser ? { ...prevUser, age: data.age || 18 } : null));
             }
           })
           .catch((err) => {
@@ -111,9 +103,6 @@ export default function Home() {
           location: selectedLocations,
           age: currentAge, // Use the captured age
           sports: sports, // Send the sports data
-          matchPreferences: {
-            genderPreference, // Send the gender preference
-          },
         }),
       });
       const data = await res.json();
@@ -264,26 +253,6 @@ export default function Home() {
             )}
           </div>
         ))}
-      </div>
-
-      {/* Gender Preference Question */}
-      <div className="mt-6">
-        <label className="block text-lg font-medium mb-2">Would you prefer to match with people of the same gender?</label>
-        <div className="flex items-center gap-4">
-          {['Male', 'Female', 'Anything'].map((option) => (
-            <label key={option} className="flex items-center">
-              <input
-                type="radio"
-                name="genderPreference"
-                value={option}
-                checked={genderPreference === option}
-                onChange={(e) => setGenderPreference(e.target.value)}
-                className="mr-2"
-              />
-              {option}
-            </label>
-          ))}
-        </div>
       </div>
 
       {/* Save profile Button */}
