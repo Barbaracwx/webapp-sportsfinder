@@ -19,7 +19,8 @@ export async function POST(req: NextRequest) {
                     telegramId: userData.id,
                     username: userData.username || '',
                     firstName: userData.first_name || '',
-                    lastName: userData.last_name || ''
+                    lastName: userData.last_name || '',
+                    isMatched: userData.isMatched || false, // Ensuring isMatched is set to false if not provided
                 }
             })
         }

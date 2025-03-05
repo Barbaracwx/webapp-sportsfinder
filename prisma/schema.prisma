@@ -8,16 +8,25 @@ generator client {
 }
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  telegramId Int     @unique
-  username   String?
-  firstName  String?
-  lastName   String?
-  age        Int?
-  gender     String?
-  location   String[] // Array of strings for location
-  sports     Json?
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  telegramId      Int      @unique
+  username        String?
+  firstName       String?
+  lastName        String?
+  age             Int?
+  gender          String?
+  location        String[]
+  sports          Json?
   matchPreferences Json?
+  isMatched       Boolean  @default(false) // Track if the user is in a match
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Match {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userAId    Int      // Telegram ID of user A
+  userBId    Int      // Telegram ID of user B
+  status     String   @default("active") // "active" or "ended"
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
 }
