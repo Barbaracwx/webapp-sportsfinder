@@ -1,7 +1,8 @@
-'use client';
+"use client"; // Mark as a Client Component
 
 import { useEffect, useState } from 'react';
 import { WebApp } from '@twa-dev/types';
+import RangeSlider from '../../components/RangeSlider'; // Import the RangeSlider component
 
 declare global {
   interface Window {
@@ -19,7 +20,8 @@ interface User {
   points: number;
   location: string[];
   sports: { [key: string]: string }; // Sports data (JSON-compatible)
-  matchPreferences: { // Match preferences (JSON-compatible)
+  matchPreferences: {
+    // Match preferences (JSON-compatible)
     [key: string]: {
       ageRange: [number, number];
       genderPreference: string;
@@ -77,7 +79,7 @@ export default function MatchPreferencesPage() {
 
               Object.keys(sports).forEach((sport) => {
                 const preferences = matchPreferences[sport] || {};
-                initialAgeRanges[sport] = preferences.ageRange || [1, 60];
+                initialAgeRanges[sport] = preferences.ageRange || [1, 100];
                 initialGenderPreferences[sport] = preferences.genderPreference || ''; // Default to empty string
                 initialSkillLevels[sport] = preferences.skillLevels || [];
                 initialLocationPreferences[sport] = preferences.locationPreferences || [];
@@ -101,10 +103,10 @@ export default function MatchPreferencesPage() {
   }, []);
 
   /* Handle age range change for a sport */
-  const handleAgeRangeChange = (sport: string, min: number, max: number) => {
+  const handleAgeRangeChange = (sport: string, newRange: [number, number]) => {
     setAgeRanges((prev) => ({
       ...prev,
-      [sport]: [min, max],
+      [sport]: newRange,
     }));
   };
 
@@ -236,35 +238,14 @@ export default function MatchPreferencesPage() {
 
           {/* Age range question */}
           <p className="mb-2">What is your preferred age range for matching?</p>
-          <div className="flex items-center gap-4">
-            <input
-              type="range"
-              min={1} // Minimum age range set to 1
-              max={100} // Maximum age range set to 60
-              value={ageRanges[sport]?.[0] || 1} // Default to 1 if not set
-              onChange={(e) => {
-                const newMin = Number(e.target.value);
-                const currentMax = ageRanges[sport]?.[1] || 100;
-                handleAgeRangeChange(sport, newMin, currentMax);
-              }}
-              className="w-full"
-            />
-            <input
-              type="range"
-              min={1} // Minimum age range set to 1
-              max={100} // Maximum age range set to 60
-              value={ageRanges[sport]?.[1] || 100} // Default to 60 if not set
-              onChange={(e) => {
-                const newMax = Number(e.target.value);
-                const currentMin = ageRanges[sport]?.[0] || 1;
-                handleAgeRangeChange(sport, currentMin, newMax);
-              }}
-              className="w-full"
-            />
-          </div>
-          <p className="mt-2 text-center">
-            Age range: {ageRanges[sport]?.[0]} - {ageRanges[sport]?.[1]}
-          </p>
+          <RangeSlider
+            initialMin={ageRanges[sport]?.[0] || 1}
+            initialMax={ageRanges[sport]?.[1] || 100}
+            min={1}
+            max={100}
+            step={1}
+            onChange={(newRange) => handleAgeRangeChange(sport, newRange)}
+          />
 
           {/* Gender preference question */}
           <p className="mt-4 mb-2">Would you prefer to match with people of the same gender?</p>
