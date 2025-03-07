@@ -57,7 +57,7 @@ const RangeSlider = ({ initialMin, initialMax, min, max, step, onChange }: Range
           step={step}
           max={max}
           value={minValue}
-          className="range-min absolute w-full -top-1 h-1 bg-transparent appearance-none" // Removed pointer-events-none
+          className="range-min absolute w-full -top-1 h-1 bg-transparent appearance-none z-10" // Added z-10
         />
 
         <input
@@ -67,7 +67,7 @@ const RangeSlider = ({ initialMin, initialMax, min, max, step, onChange }: Range
           step={step}
           max={max}
           value={maxValue}
-          className="range-max absolute w-full -top-1 h-1 bg-transparent appearance-none" // Removed pointer-events-none
+          className="range-max absolute w-full -top-1 h-1 bg-transparent appearance-none z-20" // Added z-20
         />
       </div>
 
