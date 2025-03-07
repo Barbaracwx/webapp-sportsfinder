@@ -59,7 +59,6 @@ const RangeSlider = ({ initialMin, initialMax, min, max, step, onChange }: Range
           max={max}
           value={minValue}
           className="range-min absolute w-full -top-1 h-1 bg-transparent appearance-none cursor-pointer"
-          style={{ zIndex: minValue > maxValue - 10 ? 5 : 3 }} // Dynamic z-index
         />
 
         <input
@@ -71,7 +70,6 @@ const RangeSlider = ({ initialMin, initialMax, min, max, step, onChange }: Range
           max={max}
           value={maxValue}
           className="range-max absolute w-full -top-1 h-1 bg-transparent appearance-none cursor-pointer"
-          style={{ zIndex: maxValue < minValue + 10 ? 5 : 3 }} // Dynamic z-index
         />
       </div>
 
