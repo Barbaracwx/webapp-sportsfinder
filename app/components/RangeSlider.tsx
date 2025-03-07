@@ -44,7 +44,7 @@ const RangeSlider = ({ initialMin, initialMax, min, max, step, onChange }: Range
     <div className="mb-4">
       <div className="slider relative h-1 rounded-md bg-gray-300">
         <div
-          className="progress absolute h-1 bg-blue-300 rounded" // Changed to blue
+          className="progress absolute h-1 bg-blue-300 rounded" // Progress bar color
           ref={progressRef}
         ></div>
       </div>
