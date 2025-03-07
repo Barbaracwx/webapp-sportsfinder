@@ -44,7 +44,7 @@ const RangeSlider = ({ initialMin, initialMax, min, max, step, onChange }: Range
     <div className="mb-4">
       <div className="slider relative h-1 rounded-md bg-gray-300">
         <div
-          className="progress absolute h-1 bg-green-300 rounded"
+          className="progress absolute h-1 bg-blue-300 rounded" // Changed to blue
           ref={progressRef}
         ></div>
       </div>
@@ -57,7 +57,7 @@ const RangeSlider = ({ initialMin, initialMax, min, max, step, onChange }: Range
           step={step}
           max={max}
           value={minValue}
-          className="range-min absolute w-full -top-1 h-1 bg-transparent appearance-none pointer-events-none"
+          className="range-min absolute w-full -top-1 h-1 bg-transparent appearance-none" // Removed pointer-events-none
         />
 
         <input
@@ -67,7 +67,7 @@ const RangeSlider = ({ initialMin, initialMax, min, max, step, onChange }: Range
           step={step}
           max={max}
           value={maxValue}
-          className="range-max absolute w-full -top-1 h-1 bg-transparent appearance-none pointer-events-none"
+          className="range-max absolute w-full -top-1 h-1 bg-transparent appearance-none" // Removed pointer-events-none
         />
       </div>
 
