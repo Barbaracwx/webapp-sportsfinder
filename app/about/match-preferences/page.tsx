@@ -212,7 +212,15 @@ export default function MatchPreferencesPage() {
 
       if (data.success) {
         setNotification('Match preferences saved successfully!');
-        setTimeout(() => setNotification(null), 3000); // Clear notification after 3 seconds
+        setTimeout(() => {setNotification(null); // Clear notification 
+
+        // Close the Telegram Web App
+        if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+          window.Telegram.WebApp.close();
+        }
+      }, 3000); // Clear notification after 3 seconds and close the Web App
+
+
       } else {
         setNotification('Failed to save match preferences');
       }
