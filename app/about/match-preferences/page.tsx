@@ -258,7 +258,7 @@ export default function MatchPreferencesPage() {
           {/* Gender preference question */}
           <p className="mt-4 mb-2">Would you prefer to match with people of the same gender?</p>
           <div className="flex items-center gap-4">
-            {['Male', 'Female', 'Anything'].map((option) => (
+            {['Male', 'Female', 'Either'].map((option) => (
               <label key={option} className="flex items-center">
                 <input
                   type="radio"
