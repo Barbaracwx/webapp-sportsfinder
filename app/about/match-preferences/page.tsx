@@ -308,12 +308,13 @@ export default function MatchPreferencesPage() {
       ))}
 
       {/* Submit button */}
-      <button
-        onClick={handleSubmit}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"
-      >
-        Submit
-      </button>
+      <div className="flex justify-center mt-4">
+        <button
+          onClick={handleSubmit}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          Submit
+        </button>
+      </div>
 
       {/* Notification */}
       {notification && (
