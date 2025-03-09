@@ -293,7 +293,7 @@ export default function Home() {
                 onClick={() => setNotification(null)} // Close the notification
                 className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
               >
-                Close
+                Got it!
               </button>
             )}
           </div>

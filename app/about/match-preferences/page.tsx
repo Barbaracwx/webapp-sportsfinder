@@ -34,7 +34,7 @@ interface User {
 export default function MatchPreferencesPage() {
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [notification, setNotification] = useState<string | null>(null); // For success/error notifications
+  const [notification, setNotification] = useState<{ message: string; type: 'validation' | 'success' } | null>(null); // For notifications
   const [ageRanges, setAgeRanges] = useState<{ [key: string]: [number, number] }>({}); // Store age ranges for each sport
   const [genderPreferences, setGenderPreferences] = useState<{ [key: string]: string }>({}); // Store gender preferences for each sport
   const [skillLevels, setSkillLevels] = useState<{ [key: string]: string[] }>({}); // Store skill levels for each sport
@@ -149,19 +149,19 @@ export default function MatchPreferencesPage() {
     for (const sport of Object.keys(user?.sports || {})) {
       // Validate gender preference
       if (!genderPreferences[sport]) {
-        setNotification(`Please select a gender preference for ${sport}.`);
+        setNotification({ message: `Please select a gender preference for ${sport}.`, type: 'validation' });
         return false;
       }
 
       // Validate skill levels
       if ((skillLevels[sport] || []).length === 0) {
-        setNotification(`Please select at least one skill level for ${sport}.`);
+        setNotification({ message: `Please select at least one skill level for ${sport}.`, type: 'validation' });
         return false;
       }
 
       // Validate location preferences
       if ((locationPreferences[sport] || []).length === 0) {
-        setNotification(`Please select at least one preferred location for ${sport}.`);
+        setNotification({ message: `Please select at least one preferred location for ${sport}.`, type: 'validation' });
         return false;
       }
     }
@@ -181,7 +181,10 @@ export default function MatchPreferencesPage() {
     for (const sport of Object.keys(ageRanges)) {
       const [min, max] = ageRanges[sport];
       if (min > max) {
-        setNotification(`Invalid age range for ${sport}: Minimum age cannot be greater than maximum age.`);
+        setNotification({
+          message: `Invalid age range for ${sport}: Minimum age cannot be greater than maximum age.`,
+          type: 'validation',
+        });
         return; // Stop submission if any range is invalid
       }
     }
@@ -211,19 +214,20 @@ export default function MatchPreferencesPage() {
       const data = await res.json();
 
       if (data.success) {
-        setNotification('Match preferences saved successfully!');
-        setTimeout(() => {setNotification(null); // Clear notification 
+        setNotification({ message: 'Match preferences saved successfully!', type: 'success' });
+        setTimeout(() => {
+          setNotification(null); // Clear notification
 
-        // Close the Telegram Web App
-        if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-          window.Telegram.WebApp.close();
-        }
-      }, 3000); 
+          // Close the Telegram Web App
+          if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+            window.Telegram.WebApp.close();
+          }
+        }, 3000);
       } else {
-        setNotification('Failed to save match preferences');
+        setNotification({ message: 'Failed to save match preferences', type: 'validation' });
       }
     } catch (err) {
-      setNotification('An error occurred while saving match preferences');
+      setNotification({ message: 'An error occurred while saving match preferences', type: 'validation' });
     }
   };
 
@@ -234,7 +238,7 @@ export default function MatchPreferencesPage() {
   if (!user) return <div className="container mx-auto p-4">Loading...</div>;
 
   return (
-    <div className="container mx-auto p-4 text-black min-h-screen" style={{ backgroundColor: '#d9f8e1' }}>
+    <div className="container mx-auto p-4 text-black min-h-screen relative" style={{ backgroundColor: '#d9f8e1' }}>
       <h1 className="text-2xl font-bold mb-4">Match Preferences</h1>
 
       {/* Loop through the user's selected sports */}
@@ -309,21 +313,26 @@ export default function MatchPreferencesPage() {
       <div className="flex justify-center mt-4">
         <button
           onClick={handleSubmit}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
           Submit
         </button>
       </div>
 
-      {/* Notification */}
+      {/* Notification Overlay */}
       {notification && (
-        <div className="mt-4 p-2 bg-yellow-100 text-yellow-700 rounded flex justify-between items-center">
-          <span>{notification}</span>
-          <button
-            onClick={() => setNotification(null)} // Close the notification
-            className="text-yellow-700 hover:text-yellow-900"
-          >
-            &times;
-          </button>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+            <p className="text-lg font-semibold">{notification.message}</p>
+            {notification.type === 'validation' && (
+              <button
+                onClick={() => setNotification(null)} // Close the notification
+                className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Close
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>
