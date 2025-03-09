@@ -34,7 +34,7 @@ export default function MatchPreferencesPage() {
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ message: string; type: 'validation' | 'success' } | null>(null); // For notifications
-  const [ageRanges, setAgeRanges] = useState<{ [key: string]: [number, number] }>({}); // Store age ranges for each sport
+  const [ageRanges, setAgeRanges] = useState<{ [key: string]: [number | null, number | null] }>({}); // Store age ranges for each sport
   const [genderPreferences, setGenderPreferences] = useState<{ [key: string]: string }>({}); // Store gender preferences for each sport
   const [skillLevels, setSkillLevels] = useState<{ [key: string]: string[] }>({}); // Store skill levels for each sport
   const [locationPreferences, setLocationPreferences] = useState<{ [key: string]: string[] }>({}); // Store location preferences for each sport
@@ -71,14 +71,14 @@ export default function MatchPreferencesPage() {
               setUser({ ...data, sports, matchPreferences });
 
               // Initialize age ranges, gender preferences, skill levels, and location preferences for each sport
-              const initialAgeRanges: { [key: string]: [number, number] } = {};
+              const initialAgeRanges: { [key: string]: [number | null, number | null] } = {};
               const initialGenderPreferences: { [key: string]: string } = {};
               const initialSkillLevels: { [key: string]: string[] } = {};
               const initialLocationPreferences: { [key: string]: string[] } = {};
 
               Object.keys(sports).forEach((sport) => {
                 const preferences = matchPreferences[sport] || {};
-                initialAgeRanges[sport] = preferences.ageRange || [1, 100];
+                initialAgeRanges[sport] = preferences.ageRange || [null, null]; // Default to [null, null]
                 initialGenderPreferences[sport] = preferences.genderPreference || ''; // Default to empty string
                 initialSkillLevels[sport] = preferences.skillLevels || [];
                 initialLocationPreferences[sport] = preferences.locationPreferences || [];
@@ -103,8 +103,8 @@ export default function MatchPreferencesPage() {
 
   /* Handle age range change for a sport */
   const handleAgeRangeChange = (sport: string, type: 'min' | 'max', value: string) => {
-    const numericValue = parseInt(value, 10);
-    if (isNaN(numericValue)) return; // Ignore non-numeric input
+    const numericValue = value === '' ? null : parseInt(value, 10); // Allow empty input
+    if (numericValue !== null && isNaN(numericValue)) return; // Ignore invalid input
 
     setAgeRanges((prev) => ({
       ...prev,
@@ -149,15 +149,11 @@ export default function MatchPreferencesPage() {
   /* Validate form before submission */
   const validateForm = () => {
     for (const sport of Object.keys(user?.sports || {})) {
-      const [minAge, maxAge] = ageRanges[sport] || [1, 100];
+      const [minAge, maxAge] = ageRanges[sport] || [null, null];
 
       // Validate age range
-      if (isNaN(minAge)) {
-        setNotification({ message: `Minimum age for ${sport} must be a number.`, type: 'validation' });
-        return false;
-      }
-      if (isNaN(maxAge)) {
-        setNotification({ message: `Maximum age for ${sport} must be a number.`, type: 'validation' });
+      if (minAge === null || maxAge === null) {
+        setNotification({ message: `Please enter both minimum and maximum ages for ${sport}.`, type: 'validation' });
         return false;
       }
       if (minAge < 18 || minAge > 85) {
@@ -270,7 +266,7 @@ export default function MatchPreferencesPage() {
               <input
                 type="number"
                 id={`minAge-${sport}`}
-                value={ageRanges[sport]?.[0] || 18}
+                value={ageRanges[sport]?.[0] ?? ''} // Default to empty string
                 onChange={(e) => handleAgeRangeChange(sport, 'min', e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -289,15 +285,15 @@ export default function MatchPreferencesPage() {
               <input
                 type="number"
                 id={`maxAge-${sport}`}
-                value={ageRanges[sport]?.[1] || 85}
+                value={ageRanges[sport]?.[1] ?? ''} // Default to empty string
                 onChange={(e) => handleAgeRangeChange(sport, 'max', e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.currentTarget.blur(); // Close the keyboard
                   }
                 }}
-                min={1}
-                max={100}
+                min={18}
+                max={85}
                 className="w-20 p-2 border rounded"
               />
             </div>
