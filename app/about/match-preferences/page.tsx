@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { WebApp } from '@twa-dev/types';
-import RangeSlider from '../../components/RangeSlider'; // Import the RangeSlider component
 
 declare global {
   interface Window {
@@ -103,10 +102,13 @@ export default function MatchPreferencesPage() {
   }, []);
 
   /* Handle age range change for a sport */
-  const handleAgeRangeChange = (sport: string, newRange: [number, number]) => {
+  const handleAgeRangeChange = (sport: string, type: 'min' | 'max', value: string) => {
+    const numericValue = parseInt(value, 10);
+    if (isNaN(numericValue)) return; // Ignore non-numeric input
+
     setAgeRanges((prev) => ({
       ...prev,
-      [sport]: newRange,
+      [sport]: type === 'min' ? [numericValue, prev[sport][1]] : [prev[sport][0], numericValue],
     }));
   };
 
@@ -147,6 +149,30 @@ export default function MatchPreferencesPage() {
   /* Validate form before submission */
   const validateForm = () => {
     for (const sport of Object.keys(user?.sports || {})) {
+      const [minAge, maxAge] = ageRanges[sport] || [1, 100];
+
+      // Validate age range
+      if (isNaN(minAge)) {
+        setNotification({ message: `Minimum age for ${sport} must be a number.`, type: 'validation' });
+        return false;
+      }
+      if (isNaN(maxAge)) {
+        setNotification({ message: `Maximum age for ${sport} must be a number.`, type: 'validation' });
+        return false;
+      }
+      if (minAge < 1 || minAge > 100) {
+        setNotification({ message: `Minimum age for ${sport} must be between 1 and 100.`, type: 'validation' });
+        return false;
+      }
+      if (maxAge < 1 || maxAge > 100) {
+        setNotification({ message: `Maximum age for ${sport} must be between 1 and 100.`, type: 'validation' });
+        return false;
+      }
+      if (minAge > maxAge) {
+        setNotification({ message: `Minimum age for ${sport} cannot be greater than maximum age.`, type: 'validation' });
+        return false;
+      }
+
       // Validate gender preference
       if (!genderPreferences[sport]) {
         setNotification({ message: `Please select a gender preference for ${sport}.`, type: 'validation' });
@@ -175,18 +201,6 @@ export default function MatchPreferencesPage() {
     // Validate form before submission
     if (!validateForm()) {
       return; // Stop submission if validation fails
-    }
-
-    // Validate age ranges before submission
-    for (const sport of Object.keys(ageRanges)) {
-      const [min, max] = ageRanges[sport];
-      if (min > max) {
-        setNotification({
-          message: `Invalid age range for ${sport}: Minimum age cannot be greater than maximum age.`,
-          type: 'validation',
-        });
-        return; // Stop submission if any range is invalid
-      }
     }
 
     // Prepare match preferences data
@@ -248,14 +262,36 @@ export default function MatchPreferencesPage() {
 
           {/* Age range question */}
           <p className="mb-2">What is your preferred age range for matching?</p>
-          <RangeSlider
-            initialMin={ageRanges[sport]?.[0] || 1}
-            initialMax={ageRanges[sport]?.[1] || 100}
-            min={1}
-            max={100}
-            step={1}
-            onChange={(newRange) => handleAgeRangeChange(sport, newRange)}
-          />
+          <div className="flex gap-4">
+            <div>
+              <label htmlFor={`minAge-${sport}`} className="block mb-1">
+                Min Age:
+              </label>
+              <input
+                type="number"
+                id={`minAge-${sport}`}
+                value={ageRanges[sport]?.[0] || 1}
+                onChange={(e) => handleAgeRangeChange(sport, 'min', e.target.value)}
+                min={1}
+                max={100}
+                className="w-20 p-2 border rounded"
+              />
+            </div>
+            <div>
+              <label htmlFor={`maxAge-${sport}`} className="block mb-1">
+                Max Age:
+              </label>
+              <input
+                type="number"
+                id={`maxAge-${sport}`}
+                value={ageRanges[sport]?.[1] || 100}
+                onChange={(e) => handleAgeRangeChange(sport, 'max', e.target.value)}
+                min={1}
+                max={100}
+                className="w-20 p-2 border rounded"
+              />
+            </div>
+          </div>
 
           {/* Gender preference question */}
           <p className="mt-4 mb-2">Would you prefer to match with people of the same gender?</p>
