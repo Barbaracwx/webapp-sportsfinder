@@ -160,12 +160,12 @@ export default function MatchPreferencesPage() {
         setNotification({ message: `Maximum age for ${sport} must be a number.`, type: 'validation' });
         return false;
       }
-      if (minAge < 1 || minAge > 100) {
-        setNotification({ message: `Minimum age for ${sport} must be between 1 and 100.`, type: 'validation' });
+      if (minAge < 18 || minAge > 85) {
+        setNotification({ message: `Minimum age for ${sport} must be between 18 and 85.`, type: 'validation' });
         return false;
       }
-      if (maxAge < 1 || maxAge > 100) {
-        setNotification({ message: `Maximum age for ${sport} must be between 1 and 100.`, type: 'validation' });
+      if (maxAge < 18 || maxAge > 85) {
+        setNotification({ message: `Maximum age for ${sport} must be between 18 and 85.`, type: 'validation' });
         return false;
       }
       if (minAge > maxAge) {
@@ -270,15 +270,15 @@ export default function MatchPreferencesPage() {
               <input
                 type="number"
                 id={`minAge-${sport}`}
-                value={ageRanges[sport]?.[0] || 1}
+                value={ageRanges[sport]?.[0] || 18}
                 onChange={(e) => handleAgeRangeChange(sport, 'min', e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.currentTarget.blur(); // Close the keyboard
                   }
                 }}
-                min={1}
-                max={100}
+                min={18}
+                max={85}
                 className="w-20 p-2 border rounded"
               />
             </div>
@@ -289,7 +289,7 @@ export default function MatchPreferencesPage() {
               <input
                 type="number"
                 id={`maxAge-${sport}`}
-                value={ageRanges[sport]?.[1] || 100}
+                value={ageRanges[sport]?.[1] || 85}
                 onChange={(e) => handleAgeRangeChange(sport, 'max', e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
