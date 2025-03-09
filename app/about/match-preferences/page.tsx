@@ -210,11 +210,15 @@ export default function MatchPreferencesPage() {
       });
       const data = await res.json();
 
-      if (data.success) { 
+      if (data.success) {
+        setNotification('Match preferences saved successfully!');
+        setTimeout(() => {setNotification(null); // Clear notification 
+
         // Close the Telegram Web App
         if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
           window.Telegram.WebApp.close();
         }
+      }, 3000); 
       } else {
         setNotification('Failed to save match preferences');
       }

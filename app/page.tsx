@@ -164,7 +164,7 @@ export default function Home() {
   if (!user) return <div className="container mx-auto p-4">Loading...</div>;
 
   return (
-    <div className="container mx-auto p-4 text-black min-h-screen" style={{ backgroundColor: '#d9f8e1' }}>
+    <div className="container mx-auto p-4 text-black min-h-screen relative" style={{ backgroundColor: '#d9f8e1' }}>
       <h1 className="text-2xl font-bold mb-4">Welcome, {user.firstName}!</h1>
       <h2 className="text-2xl font-bold mb-4">Profile Page</h2>
 
@@ -283,16 +283,18 @@ export default function Home() {
         Save Profile
       </button>
 
-      {/* Notification */}
+      {/* Notification Overlay */}
       {notification && (
-        <div className="mt-4 p-2 bg-yellow-100 text-yellow-700 rounded flex justify-between items-center">
-          <span>{notification}</span>
-          <button
-            onClick={() => setNotification(null)} // Close the notification
-            className="text-yellow-700 hover:text-yellow-900"
-          >
-            &times;
-          </button>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+            <p className="text-lg font-semibold">{notification}</p>
+            <button
+              onClick={() => setNotification(null)} // Close the notification
+              className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Close
+            </button>
+          </div>
         </div>
       )}
     </div>
