@@ -175,6 +175,11 @@ export default function Home() {
           type="text"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.currentTarget.blur(); // Close the keyboard
+            }
+          }}
           placeholder="Enter your display name"
           className="w-full p-2 border rounded"
         />
