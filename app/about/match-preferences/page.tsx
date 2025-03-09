@@ -222,7 +222,7 @@ export default function MatchPreferencesPage() {
           if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
             window.Telegram.WebApp.close();
           }
-        }, 3000);
+        }, 1000);
       } else {
         setNotification({ message: 'Failed to save match preferences', type: 'validation' });
       }
