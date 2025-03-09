@@ -272,6 +272,11 @@ export default function MatchPreferencesPage() {
                 id={`minAge-${sport}`}
                 value={ageRanges[sport]?.[0] || 1}
                 onChange={(e) => handleAgeRangeChange(sport, 'min', e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.currentTarget.blur(); // Close the keyboard
+                  }
+                }}
                 min={1}
                 max={100}
                 className="w-20 p-2 border rounded"
