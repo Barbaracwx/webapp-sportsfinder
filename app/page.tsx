@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 interface User {
   telegramId: string;
   firstName: string;
+  displayName: string; // Add displayName to the User interface
   gender: string;
   age: number;
   points: number;
@@ -28,6 +29,7 @@ export default function Home() {
   const [sports, setSports] = useState<{ [key: string]: string }>({});
   const [gender, setGender] = useState<string>('');
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [displayName, setDisplayName] = useState<string>(''); // New state for displayName
 
   const router = useRouter(); // Initialize the router
 
@@ -54,6 +56,7 @@ export default function Home() {
               setError(data.error);
             } else {
               setUser(data);
+              setDisplayName(data.displayName || ''); // Set displayName from the database
               setGender(data.gender);
               setSelectedLocations(data.location || []);
               setSports(data.sports || {});
@@ -76,7 +79,11 @@ export default function Home() {
   const handleSaveProfile = async () => {
     if (!user) return;
 
-    // Validate gender, location, and sports
+    // Validate displayName, gender, location, and sports
+    if (!displayName.trim()) {
+      setNotification('Please enter your display name.');
+      return;
+    }
     if (!user.gender) {
       setNotification('Please select your gender.');
       return;
@@ -99,6 +106,7 @@ export default function Home() {
         },
         body: JSON.stringify({
           telegramId: user.telegramId,
+          displayName: displayName.trim(), // Include displayName in the payload
           gender: user.gender,
           location: selectedLocations,
           age: currentAge, // Use the captured age
@@ -108,7 +116,7 @@ export default function Home() {
       const data = await res.json();
 
       if (data.success) {
-        setUser({ ...user, gender: data.gender, location: selectedLocations, age: data.age });
+        setUser({ ...user, displayName: displayName.trim(), gender: data.gender, location: selectedLocations, age: data.age });
         setNotification('Profile saved successfully!');
         setTimeout(() => setNotification(null), 3000);
 
@@ -159,6 +167,18 @@ export default function Home() {
     <div className="container mx-auto p-4 text-black min-h-screen" style={{ backgroundColor: '#d9f8e1' }}>
       <h1 className="text-2xl font-bold mb-4">Welcome, {user.firstName}!</h1>
       <h2 className="text-2xl font-bold mb-4">Profile Page</h2>
+
+      {/* Display Name Input */}
+      <div className="mt-6">
+        <label className="block text-lg font-medium mb-2">What is your display name?</label>
+        <input
+          type="text"
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+          placeholder="Enter your display name"
+          className="w-full p-2 border rounded"
+        />
+      </div>
 
       {/* Age Slider */}
       <div className="mt-6">

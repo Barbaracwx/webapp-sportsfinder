@@ -13,6 +13,7 @@ model User {
   username        String?
   firstName       String?
   lastName        String?
+  displayName     String?  
   age             Int?
   gender          String?
   location        String[]
