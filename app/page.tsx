@@ -25,7 +25,7 @@ declare global {
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [notification, setNotification] = useState<string | null>(null); // For success/error notifications
+  const [notification, setNotification] = useState<{ message: string; type: 'validation' | 'success' } | null>(null); // For notifications
   const [sports, setSports] = useState<{ [key: string]: string }>({});
   const [gender, setGender] = useState<string>('');
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
@@ -81,19 +81,19 @@ export default function Home() {
 
     // Validate displayName, gender, location, and sports
     if (!displayName.trim()) {
-      setNotification('Please enter your display name.');
+      setNotification({ message: 'Please enter your display name.', type: 'validation' });
       return;
     }
     if (!user.gender) {
-      setNotification('Please select your gender.');
+      setNotification({ message: 'Please select your gender.', type: 'validation' });
       return;
     }
     if (selectedLocations.length === 0) {
-      setNotification('Please select at least one preferred location.');
+      setNotification({ message: 'Please select at least one preferred location.', type: 'validation' });
       return;
     }
     if (Object.keys(sports).length === 0) {
-      setNotification('Please select at least one sport.');
+      setNotification({ message: 'Please select at least one sport.', type: 'validation' });
       return;
     }
 
@@ -117,7 +117,7 @@ export default function Home() {
 
       if (data.success) {
         setUser({ ...user, displayName: displayName.trim(), gender: data.gender, location: selectedLocations, age: data.age });
-        setNotification('Profile saved successfully!');
+        setNotification({ message: 'Profile saved successfully!', type: 'success' });
         setTimeout(() => setNotification(null), 3000);
 
         // Navigate to /about/match-preferences after saving
@@ -287,13 +287,15 @@ export default function Home() {
       {notification && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-            <p className="text-lg font-semibold">{notification}</p>
-            <button
-              onClick={() => setNotification(null)} // Close the notification
-              className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Close
-            </button>
+            <p className="text-lg font-semibold">{notification.message}</p>
+            {notification.type === 'validation' && (
+              <button
+                onClick={() => setNotification(null)} // Close the notification
+                className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Close
+              </button>
+            )}
           </div>
         </div>
       )}
