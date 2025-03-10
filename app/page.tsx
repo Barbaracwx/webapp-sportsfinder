@@ -190,8 +190,8 @@ export default function Home() {
         <label className="block text-lg font-medium mb-2">What is your age?</label>
         <input
           type="range"
-          min="1"
-          max="100"
+          min="18"
+          max="85"
           value={user.age || 18} // Default to 18 if age is not set
           onChange={(e) => setUser({ ...user, age: Number(e.target.value) })} // Convert to number
           className="w-full cursor-pointer"
