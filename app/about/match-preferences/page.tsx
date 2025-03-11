@@ -254,7 +254,7 @@ export default function MatchPreferencesPage() {
       {/* Loop through the user's selected sports */}
       {Object.keys(user.sports || {}).map((sport) => (
         <div key={sport} className="mb-6">
-          <h2 className="font-semibold mb-2" style={{ fontSize: '22px' }}>{sport}</h2>
+          <h2 className="text-2xl font-semibold mb-2">{sport}</h2>
 
           {/* Age range question */}
           <p className="mb-2">What is your preferred age range for matching?</p>
