@@ -252,7 +252,7 @@ export default function MatchPreferencesPage() {
       <h1 className="text-2xl font-bold mb-4">Match Preferences</h1>
 
       {/* Loop through the user's selected sports */}
-      {Object.keys(user.sports || {}).map((sport) => (
+      {Object.keys(user.sports || {}).map((sport, index) => (
         <div key={sport} className="mb-6">
           <h2 className="text-2xl font-semibold mb-2">{sport}</h2>
 
@@ -348,6 +348,11 @@ export default function MatchPreferencesPage() {
               </label>
             ))}
           </div>
+
+          {/* Add a line break between sports (except after the last sport) */}
+          {index < Object.keys(user.sports || {}).length - 1 && (
+          <div className="border-b border-gray-300 my-6"></div>
+          )}
         </div>
       ))}
 
