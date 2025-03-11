@@ -165,7 +165,6 @@ export default function Home() {
 
   return (
     <div className="container mx-auto p-4 text-black min-h-screen relative" style={{ backgroundColor: '#d9f8e1' }}>
-      <h1 className="text-2xl font-bold mb-4">Welcome!</h1>
       <h2 className="text-2xl font-bold mb-4">User Bio</h2>
 
       {/* Display Name Input */}
