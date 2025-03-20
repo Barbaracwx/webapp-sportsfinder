@@ -16,10 +16,11 @@ model User {
   displayName     String?  
   age             Int?
   gender          String?
-  location        String[]
-  sports          Json?
-  matchPreferences Json?
+  location        String[]  // Array of locations
+  sports          Json?     // Dictionary of sports and associated data
+  matchPreferences Json?    // Dictionary of match preferences for each sport
   isMatched       Boolean  @default(false) // Track if the user is in a match
+  selectedSport   String?  // Track the sport the user is currently matching for
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }

@@ -117,7 +117,11 @@ export default function Home() {
 
       if (data.success) {
         setUser({ ...user, displayName: displayName.trim(), gender: data.gender, location: selectedLocations, age: data.age });
-        setNotification({ message: 'Profile saved successfully!', type: 'success' });
+        setNotification({ 
+          message: `Welcome ${displayName}!\nSportsFinder is a player matching bot for your favourite sports! Start finding your match using /matchme! You can explore our other commands in the menu below.`,
+          type: 'success' 
+        });
+        
         setTimeout(() => setNotification(null), 3000);
 
         // Navigate to /about/match-preferences after saving
