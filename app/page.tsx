@@ -28,7 +28,6 @@ export default function Home() {
   const [notification, setNotification] = useState<{ message: string; type: 'validation' | 'success' } | null>(null); // For notifications
   const [sports, setSports] = useState<{ [key: string]: string }>({});
   const [gender, setGender] = useState<string>('');
-  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [displayName, setDisplayName] = useState<string>(''); // New state for displayName
 
   const router = useRouter(); // Initialize the router
@@ -58,7 +57,6 @@ export default function Home() {
               setUser(data);
               setDisplayName(data.displayName || ''); // Set displayName from the database
               setGender(data.gender);
-              setSelectedLocations(data.location || []);
               setSports(data.sports || {});
               // Ensure age is set from the database
               setUser((prevUser) => (prevUser ? { ...prevUser, age: data.age || 18 } : null));
@@ -88,10 +86,6 @@ export default function Home() {
       setNotification({ message: 'Please select your gender.', type: 'validation' });
       return;
     }
-    if (selectedLocations.length === 0) {
-      setNotification({ message: 'Please select at least one preferred location.', type: 'validation' });
-      return;
-    }
     if (Object.keys(sports).length === 0) {
       setNotification({ message: 'Please select at least one sport.', type: 'validation' });
       return;
@@ -108,7 +102,6 @@ export default function Home() {
           telegramId: user.telegramId,
           displayName: displayName.trim(), // Include displayName in the payload
           gender: user.gender,
-          location: selectedLocations,
           age: currentAge, // Use the captured age
           sports: sports, // Send the sports data
         }),
@@ -116,7 +109,7 @@ export default function Home() {
       const data = await res.json();
 
       if (data.success) {
-        setUser({ ...user, displayName: displayName.trim(), gender: data.gender, location: selectedLocations, age: data.age });
+        setUser({ ...user, displayName: displayName.trim(), gender: data.gender, age: data.age });
         setNotification({ message: 'Profile saved successfully!', type: 'success' });        
         setTimeout(() => setNotification(null), 3000);
 
@@ -146,15 +139,6 @@ export default function Home() {
   /*update skill level*/
   const handleSkillLevelChange = (sport: string, level: string) => {
     setSports((prev) => ({ ...prev, [sport]: level }));
-  };
-
-  /*handle location change*/
-  const handleLocationChange = (location: string) => {
-    setSelectedLocations((prevLocations) =>
-      prevLocations.includes(location)
-        ? prevLocations.filter((loc) => loc !== location)
-        : [...prevLocations, location]
-    );
   };
 
   if (error) {
@@ -231,22 +215,6 @@ export default function Home() {
             Female
           </label>
         </div>
-      </div>
-
-      {/* Preferred Location Selection */}
-      <div className="mt-6">
-        <label className="block text-lg font-medium mb-2">Where is your preferred location for games?</label>
-        {['North', 'South', 'East', 'West', 'Central'].map((location) => (
-          <div key={location} className="flex items-center gap-2 mb-2">
-            <input
-              type="checkbox"
-              checked={selectedLocations.includes(location)}
-              onChange={() => handleLocationChange(location)}
-              className="mr-2"
-            />
-            {location}
-          </div>
-        ))}
       </div>
 
       {/* Sports Selection */}
