@@ -25,7 +25,6 @@ export async function POST(req: Request) {
         telegramId: { not: telegramId }, // Ensure it's a different user
         isMatched: false,
         sports: { equals: currentUser.sports || {} }, // Match based on JSON sports
-        location: { hasSome: currentUser.location || [] }, // Match location
       },
     });
 
