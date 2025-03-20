@@ -4,13 +4,12 @@ import { prisma } from '@/lib/prisma'
 export async function POST(req: NextRequest) {
     try {
         // Parse the request body
-        const { telegramId, gender, location, age, sports, displayName } = await req.json()
+        const { telegramId, gender, age, sports, displayName } = await req.json()
 
         // Validate input
         if (
             !telegramId || 
-            !gender || 
-            !location || 
+            !gender ||  
             !age || 
             (gender !== 'Male' && gender !== 'Female') ||
             typeof age !== 'number' || 
@@ -30,7 +29,6 @@ export async function POST(req: NextRequest) {
             where: { telegramId },
             data: { 
                 gender, 
-                location, 
                 age,
                 sports, // Save sports data (or null if not provided)
                 displayName // Add displayName to the update
@@ -40,7 +38,6 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ 
             success: true, 
             gender: updatedUser.gender, 
-            location: updatedUser.location,
             age: updatedUser.age,
             sports: updatedUser.sports, // Return the saved sports data
             displayName: updatedUser.displayName // Return the saved displayName
