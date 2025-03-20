@@ -225,7 +225,7 @@ export default function MatchPreferencesPage() {
 
       if (data.success) {
         setNotification({ 
-          message: `Match preferences saved successfully! \nSportsFinder is a player matching bot for your favourite sports! Start finding your match using /matchme! You can explore our other commands in the menu below.`,
+          message: `Match preferences saved successfully! \nStart finding your match using /matchme! You can explore our other commands in the menu below.`,
           type: 'success',
           showCloseButton: true // Add this property to show the close button
         });
