@@ -33,7 +33,7 @@ interface User {
 export default function MatchPreferencesPage() {
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [notification, setNotification] = useState<{ message: string; type: 'validation' | 'success' } | null>(null); // For notifications
+  const [notification, setNotification] = useState<{ message: string; type: 'validation' | 'success'; showCloseButton?: boolean } | null>(null); // For notifications
   const [ageRanges, setAgeRanges] = useState<{ [key: string]: [number | null, number | null] }>({}); // Store age ranges for each sport
   const [genderPreferences, setGenderPreferences] = useState<{ [key: string]: string }>({}); // Store gender preferences for each sport
   const [skillLevels, setSkillLevels] = useState<{ [key: string]: string[] }>({}); // Store skill levels for each sport
@@ -226,22 +226,21 @@ export default function MatchPreferencesPage() {
       if (data.success) {
         setNotification({ 
           message: `Match preferences saved successfully! \nSportsFinder is a player matching bot for your favourite sports! Start finding your match using /matchme! You can explore our other commands in the menu below.`,
-          type: 'success' 
+          type: 'success',
+          showCloseButton: true // Add this property to show the close button
         });
-        
-        setTimeout(() => {
-          setNotification(null); // Clear notification
-
-          // Close the Telegram Web App
-          if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-            window.Telegram.WebApp.close();
-          }
-        }, 1000);
       } else {
         setNotification({ message: 'Failed to save match preferences', type: 'validation' });
       }
     } catch (err) {
       setNotification({ message: 'An error occurred while saving match preferences', type: 'validation' });
+    }
+  };
+
+  /* Handle closing the Telegram Web App */
+  const handleCloseWebApp = () => {
+    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+      window.Telegram.WebApp.close();
     }
   };
 
@@ -378,6 +377,14 @@ export default function MatchPreferencesPage() {
             {notification.type === 'validation' && (
               <button
                 onClick={() => setNotification(null)} // Close the notification
+                className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Close
+              </button>
+            )}
+            {notification.type === 'success' && notification.showCloseButton && (
+              <button
+                onClick={handleCloseWebApp} // Close the Telegram Web App
                 className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
               >
                 Close
