@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { WebApp } from '@twa-dev/types';
+import DualRangeSlider from "../../dual-range-slider";
 
 declare global {
   interface Window {
@@ -22,7 +23,10 @@ interface User {
   matchPreferences: {
     // Match preferences (JSON-compatible)
     [key: string]: {
-      ageRange: [number, number];
+      ageRange: {
+        min: number
+        max: number
+      }
       genderPreference: string;
       skillLevels: string[];
       locationPreferences: string[];
@@ -33,11 +37,11 @@ interface User {
 export default function MatchPreferencesPage() {
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [ageRanges, setAgeRanges] = useState<{ [key: string]: [number, number] }>({});
+  const [genderPreferences, setGenderPreferences] = useState<{ [key: string]: string }>({});
+  const [skillLevels, setSkillLevels] = useState<{ [key: string]: string[] }>({});
+  const [locationPreferences, setLocationPreferences] = useState<{ [key: string]: string[] }>({});
   const [notification, setNotification] = useState<{ message: string; type: 'validation' | 'success'; showCloseButton?: boolean } | null>(null); // For notifications
-  const [ageRanges, setAgeRanges] = useState<{ [key: string]: [number | null, number | null] }>({}); // Store age ranges for each sport
-  const [genderPreferences, setGenderPreferences] = useState<{ [key: string]: string }>({}); // Store gender preferences for each sport
-  const [skillLevels, setSkillLevels] = useState<{ [key: string]: string[] }>({}); // Store skill levels for each sport
-  const [locationPreferences, setLocationPreferences] = useState<{ [key: string]: string[] }>({}); // Store location preferences for each sport
 
   /* Fetch user data */
   useEffect(() => {
@@ -61,7 +65,6 @@ export default function MatchPreferencesPage() {
             if (data.error) {
               setError(data.error);
             } else {
-              // Parse JSON fields if they are stored as strings
               const sports = typeof data.sports === 'string' ? JSON.parse(data.sports) : data.sports || {};
               const matchPreferences =
                 typeof data.matchPreferences === 'string'
@@ -70,16 +73,20 @@ export default function MatchPreferencesPage() {
 
               setUser({ ...data, sports, matchPreferences });
 
-              // Initialize age ranges, gender preferences, skill levels, and location preferences for each sport
-              const initialAgeRanges: { [key: string]: [number | null, number | null] } = {};
+              // Initialize preferences
+              const initialAgeRanges: { [key: string]: [number, number] } = {};
               const initialGenderPreferences: { [key: string]: string } = {};
               const initialSkillLevels: { [key: string]: string[] } = {};
               const initialLocationPreferences: { [key: string]: string[] } = {};
 
               Object.keys(sports).forEach((sport) => {
                 const preferences = matchPreferences[sport] || {};
-                initialAgeRanges[sport] = preferences.ageRange || [null, null]; // Default to [null, null]
-                initialGenderPreferences[sport] = preferences.genderPreference || ''; // Default to empty string
+                initialAgeRanges[sport] = Array.isArray(preferences.ageRange) 
+                  ? preferences.ageRange 
+                  : preferences.ageRange 
+                    ? [preferences.ageRange.min, preferences.ageRange.max] 
+                    : [18, 85];
+                initialGenderPreferences[sport] = preferences.genderPreference || '';
                 initialSkillLevels[sport] = preferences.skillLevels || [];
                 initialLocationPreferences[sport] = preferences.locationPreferences || [];
               });
@@ -102,13 +109,10 @@ export default function MatchPreferencesPage() {
   }, []);
 
   /* Handle age range change for a sport */
-  const handleAgeRangeChange = (sport: string, type: 'min' | 'max', value: string) => {
-    const numericValue = value === '' ? null : parseInt(value, 10); // Allow empty input
-    if (numericValue !== null && isNaN(numericValue)) return; // Ignore invalid input
-
-    setAgeRanges((prev) => ({
+  const handleAgeRangeChange = (sport: string, minAge: number, maxAge: number) => {
+    setAgeRanges(prev => ({
       ...prev,
-      [sport]: type === 'min' ? [numericValue, prev[sport][1]] : [prev[sport][0], numericValue],
+      [sport]: [minAge, maxAge]
     }));
   };
 
@@ -124,8 +128,8 @@ export default function MatchPreferencesPage() {
   const handleSkillLevelChange = (sport: string, level: string, isChecked: boolean) => {
     setSkillLevels((prev) => {
       const updatedLevels = isChecked
-        ? [...(prev[sport] || []), level] // Add skill level
-        : (prev[sport] || []).filter((l) => l !== level); // Remove skill level
+        ? [...(prev[sport] || []), level]
+        : (prev[sport] || []).filter((l) => l !== level);
       return {
         ...prev,
         [sport]: updatedLevels,
@@ -137,8 +141,8 @@ export default function MatchPreferencesPage() {
   const handleLocationPreferenceChange = (sport: string, location: string, isChecked: boolean) => {
     setLocationPreferences((prev) => {
       const updatedLocations = isChecked
-        ? [...(prev[sport] || []), location] // Add location
-        : (prev[sport] || []).filter((loc) => loc !== location); // Remove location
+        ? [...(prev[sport] || []), location]
+        : (prev[sport] || []).filter((loc) => loc !== location);
       return {
         ...prev,
         [sport]: updatedLocations,
@@ -148,14 +152,13 @@ export default function MatchPreferencesPage() {
 
   /* Validate form before submission */
   const validateForm = () => {
-    for (const sport of Object.keys(user?.sports || {})) {
-      const [minAge, maxAge] = ageRanges[sport] || [null, null];
+    if (!user) return false;
+
+    for (const sport of Object.keys(user.sports)) {
+      const ageRange = ageRanges[sport] || [0, 0];
+      const [minAge, maxAge] = ageRange;
 
       // Validate age range
-      if (minAge === null || maxAge === null) {
-        setNotification({ message: `Please enter both minimum and maximum ages for ${sport}.`, type: 'validation' });
-        return false;
-      }
       if (minAge < 18 || minAge > 85) {
         setNotification({ message: `Minimum age for ${sport} must be between 18 and 85.`, type: 'validation' });
         return false;
@@ -194,14 +197,13 @@ export default function MatchPreferencesPage() {
   const handleSubmit = async () => {
     if (!user) return;
 
-    // Validate form before submission
     if (!validateForm()) {
-      return; // Stop submission if validation fails
+      return;
     }
 
     // Prepare match preferences data
     const matchPreferences: { [key: string]: any } = {};
-    Object.keys(user.sports || {}).forEach((sport) => {
+    Object.keys(user.sports).forEach((sport) => {
       matchPreferences[sport] = {
         ageRange: ageRanges[sport],
         genderPreference: genderPreferences[sport],
@@ -218,7 +220,7 @@ export default function MatchPreferencesPage() {
         },
         body: JSON.stringify({
           telegramId: user.telegramId,
-          matchPreferences, // Send match preferences as JSON
+          matchPreferences,
         }),
       });
       const data = await res.json();
@@ -237,152 +239,206 @@ export default function MatchPreferencesPage() {
     }
   };
 
-  /* Handle closing the Telegram Web App */
-  const handleCloseWebApp = () => {
-    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-      window.Telegram.WebApp.close();
-    }
-  };
+    /* Handle closing the Telegram Web App */
+    const handleCloseWebApp = () => {
+      if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+        window.Telegram.WebApp.close();
+      }
+    };
+  
 
   if (error) {
     return <div className="container mx-auto p-4 text-red-500">{error}</div>;
   }
 
   if (!user) return <div className="container mx-auto p-4">Loading...</div>;
-
+  
   return (
-    <div className="container mx-auto p-4 text-black min-h-screen relative" style={{ backgroundColor: '#d9f8e1' }}>
-      <h1 className="text-2xl font-bold mb-4">Match Preferences</h1>
-
-      {/* Loop through the user's selected sports */}
-      {Object.keys(user.sports || {}).map((sport, index) => (
-        <div key={sport} className="mb-6">
-          <h2 className="text-2xl font-semibold mb-2">{sport}</h2>
-
-          {/* Age range question */}
-          <p className="mb-2">What is your preferred age range for matching?</p>
-          <div className="flex gap-4">
-            <div>
-              <label htmlFor={`minAge-${sport}`} className="block mb-1">
-                Min Age:
-              </label>
-              <input
-                type="number"
-                id={`minAge-${sport}`}
-                value={ageRanges[sport]?.[0] ?? ''} // Default to empty string
-                onChange={(e) => handleAgeRangeChange(sport, 'min', e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.currentTarget.blur(); // Close the keyboard
-                  }
-                }}
-                min={18}
-                max={85}
-                className="w-20 p-2 border rounded"
-              />
+    <div className="container mx-auto p-4 text-black min-h-screen relative" style={{ backgroundColor: '#F0F9F0' }}>
+      <h1 className="text-2xl font-bold mb-4 text-center">Match Preferences</h1>
+  
+      {Object.keys(user.sports).map((sport, index) => {
+        const currentAgeRange = ageRanges[sport] || [18, 85];
+        
+        return (
+          <div key={sport} className="mb-6">
+            <h2 className="text-2xl font-semibold mb-4 text-center">{sport}</h2>
+  
+            {/* Age Range Section */}
+            <div className="mt-6">
+              <p className="block text-lg font-medium mb-2">What is your preferred age range for matching?</p>
+              <p className="text-center font-semibold mb-4">
+              {currentAgeRange[0]} - {currentAgeRange[1]} years old
+              </p>
+              <div className="px-3 py-6">
+                <DualRangeSlider
+                  min={18}
+                  max={85}
+                  minValue={currentAgeRange[0]}
+                  maxValue={currentAgeRange[1]}
+                  onChange={(min, max) => handleAgeRangeChange(sport, min, max)}
+                />
+                <div className="flex justify-between mt-2">
+                  <span className="text-xs">18</span>
+                  <span className="text-xs">85</span>
+                </div>
+              </div>
             </div>
-            <div>
-              <label htmlFor={`maxAge-${sport}`} className="block mb-1">
-                Max Age:
-              </label>
-              <input
-                type="number"
-                id={`maxAge-${sport}`}
-                value={ageRanges[sport]?.[1] ?? ''} // Default to empty string
-                onChange={(e) => handleAgeRangeChange(sport, 'max', e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.currentTarget.blur(); // Close the keyboard
-                  }
-                }}
-                min={18}
-                max={85}
-                className="w-20 p-2 border rounded"
-              />
+  
+            {/* Gender Preference Section */}
+            <div className="mt-6">
+              <p className="block text-lg font-medium mb-2">Would you prefer to match with people of the same gender?</p>
+              <div className="flex gap-4">
+                {['Male', 'Female', 'Either'].map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => handleGenderPreferenceChange(sport, option)}
+                    className={`flex-1 py-2 px-4 rounded-full ${
+                      genderPreferences[sport] === option 
+                        ? 'bg-[#B3D250]'
+                        : 'bg-[#E8F4BE]'
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
             </div>
+
+            {/* Skill Level Section */}
+            <div className="mt-6">
+              <p className="block text-lg font-medium mb-2">Choose the skill level of players you'd like to match with:</p>
+              <div className="space-y-4">
+                <div className="flex gap-4">
+                  {['Newbie', 'Beginner'].map((level) => (
+                    <button
+                      key={level}
+                      type="button"
+                      onClick={() => handleSkillLevelChange(
+                        sport, 
+                        level, 
+                        !(skillLevels[sport] || []).includes(level)
+                  )}
+                      className={`flex-1 py-2 px-4 rounded-full ${
+                        (skillLevels[sport] || []).includes(level)
+                          ? 'bg-[#B3D250]'
+                          : 'bg-[#E8F4BE]'
+                      }`}
+                    >
+                      {level}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-4">
+                  {['Intermediate', 'Pro'].map((level) => (
+                    <button
+                      key={level}
+                      type="button"
+                      onClick={() => handleSkillLevelChange(
+                        sport, 
+                        level, 
+                        !(skillLevels[sport] || []).includes(level)
+                      )}
+                      className={`flex-1 py-2 px-4 rounded-full ${
+                        (skillLevels[sport] || []).includes(level)
+                          ? 'bg-[#B3D250]'
+                          : 'bg-[#E8F4BE]'
+                      }`}
+                    >
+                      {level}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Location Preference Section */}
+            <div className="mt-6">
+              <p className="block text-lg font-medium mb-2">Choose preferred location to find matches:</p>
+              <div className="space-y-4">
+                <div className="flex gap-4 justify-center">
+                  {['North', 'South', 'East'].map((location) => (
+                    <button
+                      key={location}
+                      type="button"
+                      onClick={() =>
+                        handleLocationPreferenceChange(
+                          sport,
+                          location,
+                          !(locationPreferences[sport] || []).includes(location)
+                  )}
+                      className={`w-24 py-2 px-4 rounded-full ${
+                        (locationPreferences[sport] || []).includes(location)
+                          ? 'bg-[#B3D250]'
+                          : 'bg-[#E8F4BE]'
+                      }`}
+                    >
+                      {location}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-4 justify-center">
+                  <div className="w-26"></div>
+                  {['West', 'Central'].map((location) => (
+                    <button
+                      key={location}
+                      type="button"
+                      onClick={() =>
+                        handleLocationPreferenceChange(
+                          sport,
+                          location,
+                          !(locationPreferences[sport] || []).includes(location)
+                        )
+                      }
+                      className={`w-24 py-2 px-4 rounded-full ${
+                        (locationPreferences[sport] || []).includes(location)
+                          ? 'bg-[#B3D250]'
+                          : 'bg-[#E8F4BE]'
+                      }`}
+                    >
+                      {location}
+                    </button>
+                  ))}
+                  <div className="w-26"></div>
+                </div>
+              </div>
+            </div>
+
+            {index < Object.keys(user.sports).length - 1 && (
+              <div className="border-b border-gray-300 my-6"></div>
+            )}
           </div>
-
-          {/* Gender preference question */}
-          <p className="mt-4 mb-2">Would you prefer to match with people of the same gender?</p>
-          <div className="flex items-center gap-4">
-            {['Male', 'Female', 'Either'].map((option) => (
-              <label key={option} className="flex items-center">
-                <input
-                  type="radio"
-                  name={`genderPreference-${sport}`}
-                  value={option}
-                  checked={genderPreferences[sport] === option}
-                  onChange={() => handleGenderPreferenceChange(sport, option)}
-                  className="mr-2"
-                />
-                {option}
-              </label>
-            ))}
-          </div>
-
-          {/* Skill level question */}
-          <p className="mt-4 mb-2">Choose the skill level of players you'd like to match with:</p>
-          <div className="flex flex-col gap-2">
-            {['Newbie', 'Beginner', 'Intermediate', 'Pro'].map((level) => (
-              <label key={level} className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={(skillLevels[sport] || []).includes(level)}
-                  onChange={(e) => handleSkillLevelChange(sport, level, e.target.checked)}
-                  className="mr-2"
-                />
-                {level}
-              </label>
-            ))}
-          </div>
-
-          {/* Location preference question */}
-          <p className="mt-4 mb-2">Choose preferred location to find matches:</p>
-          <div className="flex flex-col gap-2">
-            {['North', 'South', 'East', 'West', 'Central'].map((location) => (
-              <label key={location} className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={(locationPreferences[sport] || []).includes(location)}
-                  onChange={(e) => handleLocationPreferenceChange(sport, location, e.target.checked)}
-                  className="mr-2"
-                />
-                {location}
-              </label>
-            ))}
-          </div>
-
-          {/* Add a line break between sports (except after the last sport) */}
-          {index < Object.keys(user.sports || {}).length - 1 && (
-          <div className="border-b border-gray-300 my-6"></div>
-          )}
-        </div>
-      ))}
-
-      {/* Submit button */}
-      <div className="flex justify-center mt-4">
+        );
+      })}
+  
+      <div className="mt-8 flex justify-center">
         <button
           onClick={handleSubmit}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          className="w-1/2 py-4 px-6 rounded-full bg-[#B3D250] hover:bg-[#B3D250] active:bg-[#98b73d] text-black font-bold text-lg transition-colors duration-200"
         >
-          Submit
+          Save!
         </button>
       </div>
 
-      {/* Notification Overlay */}
+      {/* Copyright Footer */}
+      <div className="text-center mt-8 mb-4 text-gray-600 text-sm">
+        <p>&copy; 2025 SportsFinder</p>
+      </div>
+  
       {notification && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg text-center">
             <p className="text-lg font-semibold">{notification.message}</p>
             {notification.type === 'validation' && (
               <button
-                onClick={() => setNotification(null)} // Close the notification
+                onClick={() => setNotification(null)}
                 className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
               >
-                Close
+                Got it!
               </button>
             )}
-            {notification.type === 'success' && notification.showCloseButton && (
+                        {notification.type === 'success' && notification.showCloseButton && (
               <button
                 onClick={handleCloseWebApp} // Close the Telegram Web App
                 className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"

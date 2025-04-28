@@ -1,0 +1,74 @@
+/* Ensure range inputs have a large enough touch target */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    cursor: pointer;
+    width: 100%;
+  }
+  
+  /* Remove default focus styles */
+  input[type="range"]:focus {
+    outline: none;
+  }
+  
+  /* For Firefox */
+  input[type="range"]::-moz-range-track {
+    background: transparent;
+    border: none;
+  }
+  
+  input[type="range"]::-moz-range-thumb {
+    -moz-appearance: none;
+    background: transparent;
+    border: none;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+  }
+  
+  /* For Chrome and others */
+  input[type="range"]::-webkit-slider-runnable-track {
+    background: transparent;
+    border: none;
+  }
+  
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    background: transparent;
+    border: none;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+  }
+  
+  /* For IE */
+  input[type="range"]::-ms-track {
+    background: transparent;
+    border: none;
+    color: transparent;
+  }
+  
+  input[type="range"]::-ms-thumb {
+    background: transparent;
+    border: none;
+    height: 40px;
+    width: 40px;
+    border-radius: 50%;
+  }
+  
+  /* Prevent scrolling when touching the slider on mobile */
+  [role="slider"] {
+    touch-action: none;
+  }
+  
+  /* Prevent scrolling when touching the slider on mobile */
+  .dual-range-slider {
+    touch-action: none;
+  }
+  
+  /* Ensure the slider track is clickable */
+  .dual-range-slider {
+    touch-action: none;
+  }
+  
